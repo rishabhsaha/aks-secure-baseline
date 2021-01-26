@@ -62,14 +62,14 @@ Not only do we enable them in the steps below by default, but also set up an Azu
    This will deploy the resource groups, Azure Policies, and Azure Security Center configuration all as identified above.
 
    ```bash
-   # [This takes about one minute.]
+   # [This takes about six minutes to run.]
    az deployment sub create -f subscription.json -l centralus
    ```
 
-   If you do not have permissions on your subscription to enable Azure Defender (which requires the Azure RBAC role of _Subscription Owner_ or _Security Admin_), then instead execute the following variation of the same command. This will not enable Azure Defender services nor will Azure Policy attempt to enable the same (the policy will still be created, but in audit-only mode). Your final deployment should be to a subscription with these services activated.
+   If you do not have permissions on your subscription to enable Azure Defender (which requires the Azure RBAC role of _Subscription Owner_ or _Security Admin_), then instead execute the following variation of the same command. This will not enable Azure Defender services nor will Azure Policy attempt to enable the same (the policy will still be created, but in audit-only mode). Your final deployment should be to a subscription with these security services activated.
 
    ```bash
-   # [This takes about one minute.]
+   # [This takes about five minutes to run.]
    az deployment sub create -f subscription.json -l centralus -p enableAzureDefender=false enforceAzureDefenderAutoDeployPolicies=false
    ```
 
