@@ -20,7 +20,7 @@ Your `rg-enterprise-networking-spokes` will be populated with the dedicated regi
 1. Deploy the cluster spoke.
 
    ```bash
-   export RESOURCEID_VNET_HUB=$(az deployment group show -g rg-enterprise-networking-hubs -n hub-region.v0 --query properties.outputs.hubVnetId.value -o tsv)
+   RESOURCEID_VNET_HUB=$(az deployment group show -g rg-enterprise-networking-hubs -n hub-region.v0 --query properties.outputs.hubVnetId.value -o tsv)
 
    # [This takes about five minutes to run.]
    az deployment group create -g rg-enterprise-networking-spokes -f networking/spoke-BU0001A0005-01.json -p location=eastus2 hubVnetResourceId="${RESOURCEID_VNET_HUB}"
@@ -31,9 +31,9 @@ Your `rg-enterprise-networking-spokes` will be populated with the dedicated regi
    This is a derivative of same hub template you used before, but now updated with Azure Firewall rules specific to this AKS Cluster infrastructure.
 
    ```bash
-   export RESOURCEID_SUBNET_AIB=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0005-00 --query properties.outputs.imageBuilderSubnetResourceId.value -o tsv)
-   export RESOURCEID_SUBNET_NODEPOOLS="['$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0005-01 --query "properties.outputs.nodepoolSubnetResourceIds.value | join ('\',\'',@)" -o tsv)']"
-   export RESOURCEID_SUBNET_JUMPBOX=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0005-01 --query properties.outputs.jumpboxSubnetResourceId.value -o tsv)
+   RESOURCEID_SUBNET_AIB=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0005-00 --query properties.outputs.imageBuilderSubnetResourceId.value -o tsv)
+   RESOURCEID_SUBNET_NODEPOOLS="['$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0005-01 --query "properties.outputs.nodepoolSubnetResourceIds.value | join ('\',\'',@)" -o tsv)']"
+   RESOURCEID_SUBNET_JUMPBOX=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0005-01 --query properties.outputs.jumpboxSubnetResourceId.value -o tsv)
 
    # [This takes about seven minutes to run.]
    az deployment group create -g rg-enterprise-networking-hubs -f networking/hub-region.v2.json -p location=eastus2 aksImageBuilderSubnetResourceId="${RESOURCEID_SUBNET_AIB}" nodepoolSubnetResourceIds="${RESOURCEID_SUBNET_NODEPOOLS}" aksJumpboxSubnetResourceId="${RESOURCEID_SUBNET_JUMPBOX}"

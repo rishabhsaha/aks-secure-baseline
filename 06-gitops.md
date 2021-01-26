@@ -22,9 +22,11 @@ Your github repo will be the source of truth for your cluster's configuration. T
 
 1. Import Flux and other baseline security/utility images into your container registry.
 
+   > Public container registries are subject to faults such as outages (no SLA) or request throttling. Interruptions like these can be crippling for a system that needs to pull an image _right now_. Also public registries may not support compliance requirements you may have. To minimize the risks of using public registries, store all applicable container images in a registry that you control.
+
    ```bash
    # Get your Azure Container Registry service name
-   ACR_NAME=$(az deployment group show --resource-group rg-bu0001a0005 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
+   ACR_NAME=$(az deployment group show -g rg-bu0001a0005 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
    
    # [Combined this takes about two minutes.]
    az acr import --source ghcr.io/fluxcd/kustomize-controller:v0.6.3 -n $ACR_NAME
@@ -36,7 +38,7 @@ Your github repo will be the source of truth for your cluster's configuration. T
 
 1. Update kustomization files to use images from your container registry.
 
-   Update the two `newName:` values in `k8s-resources/flux-system/kustomization.yaml` to your container registry instead of the default public container registry.
+   Update the two `newName:` values in `cluster-manifests/flux-system/kustomization.yaml` to your container registry instead of the default public container registry.
 
    ```bash
    cd k8s-resources
@@ -48,7 +50,7 @@ Your github repo will be the source of truth for your cluster's configuration. T
 1. Update flux to pull from your repo instead of the mspnp repo.
 
    ```bash
-   sed -i "s/REPLACE_ME_WITH_YOUR_GITHUBACCOUNTNAME/${GITHUB_ACCOUNT_NAME}/" k8s-resources/flux-system/gotk-sync.yaml
+   sed -i "s/REPLACE_ME_WITH_YOUR_GITHUBACCOUNTNAME/${GITHUB_ACCOUNT_NAME}/" cluster-manifests/flux-system/gotk-sync.yaml
 
    git commit -a -m "Update Flux to pull from my fork instead of the upstream Microsoft repo."
    ```
@@ -94,7 +96,7 @@ Your github repo will be the source of truth for your cluster's configuration. T
 1. From your Azure Bastion connection, get your AKS credentials and set your `kubectl` context to your cluster.
 
    ```bash
-   AKS_CLUSTER_NAME=$(az deployment group show --resource-group rg-bu0001a0005 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)
+   AKS_CLUSTER_NAME=$(az deployment group show -g rg-bu0001a0005 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)
 
    az aks get-credentials -g rg-bu0001a0005 -n $AKS_CLUSTER_NAME
    ```
@@ -126,7 +128,7 @@ Your github repo will be the source of truth for your cluster's configuration. T
    git clone https://github.com/${GITHUB_ACCOUNT_NAME}/aks-regulated-cluster
    cd aks-regulated-cluster
 
-   kubectl create -k k8s-resources/flux-system
+   kubectl apply -k cluster-manifests/flux-system
    ```
 
    If this process fails with an error similar to
@@ -142,6 +144,7 @@ Your github repo will be the source of truth for your cluster's configuration. T
    kubectl wait --namespace flux-system --for=condition=available deployment/source-controller --timeout=90s
 
    # If you have flux installed you can also inspect using the following commands
+   # (The default jumpbox image created with this walkthrough has the flux cli installed.)
    flux check --components source-controller,kustomize-controller
    flux get sources git
    flux get kustomizations

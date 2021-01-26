@@ -25,22 +25,19 @@ Following the steps below you will result in an Azure AD configuration that will
 
 ## Steps
 
-1. Query and save your Azure subscription's tenant id. _Skip if using the same tenant for both Azure RBAC and Kubernetes RBAC._
+1. Query and save your Azure subscription's tenant id.
 
    ```bash
-   export TENANTID_AZURERBAC=$(az account show --query tenantId --output tsv)
+   TENANTID_AZURERBAC=$(az account show --query tenantId -o tsv)
    ```
 
-1. Login into the tenant where Kubernetes Cluster API authorization will be associated with. _Skip if using the same tenant for both Azure RBAC and Kubernetes RBAC._
+1. Log in to the tenant where Kubernetes Cluster API authorization will be associated with.
+
+   Capture the Azure AD Tenant ID that will be associated with your cluster's Kubernetes RBAC for Cluster API access.
 
    ```bash
    az login -t <Replace-With-ClusterApi-AzureAD-TenantId> --allow-no-subscriptions
-   ```
-
-1. Capture the Azure AD Tenant ID that will be associated with your cluster's Kubernetes RBAC for Cluster API access.
-
-   ```bash
-   export TENANTID_K8SRBAC=$(az account show --query tenantId --output tsv)
+   TENANTID_K8SRBAC=$(az account show --query tenantId -o tsv)
    ```
 
 1. Create/identify the Azure AD security group that is going to map to the [Kubernetes Cluster Admin](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles) role `cluster-admin`.
@@ -50,8 +47,8 @@ Following the steps below you will result in an Azure AD configuration that will
    > :warning: This cluster role is the highest-privileged role available in Kubernetes. Members of this group will have _complete access throughout the cluster_. Generally speaking, there should be **no standing access** at this level; ideally implementing JIT AD group membership when necessary. In the next step, you'll create a dedicated account for this highly-privileged, administrative role. Ensure your all of your cluster's RBAC assignments and memberships are maliciously managed and auditable; aligning to minimal standing permissions and all other organization & compliance requirements.
 
    ```bash
-   export AADOBJECTNAME_GROUP_CLUSTERADMIN=cluster-admins-bu0001a000500
-   export AADOBJECTID_GROUP_CLUSTERADMIN=$(az ad group create --display-name $AADOBJECTNAME_GROUP_CLUSTERADMIN --mail-nickname $AADOBJECTNAME_GROUP_CLUSTERADMIN --description "Principals in this group are cluster admins in the bu001a000500 cluster." --query objectId -o tsv)
+   AADOBJECTNAME_GROUP_CLUSTERADMIN=cluster-admins-bu0001a000500
+   AADOBJECTID_GROUP_CLUSTERADMIN=$(az ad group create --display-name $AADOBJECTNAME_GROUP_CLUSTERADMIN --mail-nickname $AADOBJECTNAME_GROUP_CLUSTERADMIN --description "Principals in this group are cluster admins in the bu0001a000500 cluster." --query objectId -o tsv)
    ```
 
 1. Create a "break-glass" cluster administrator user for your AKS cluster.
@@ -59,9 +56,9 @@ Following the steps below you will result in an Azure AD configuration that will
    This steps creates a dedicated account that you can use for cluster administrative access. This account should have no standing permissions on any Azure resources; a compromise of this account then cannot be parlayed into Azure management control plane access. If using the same tenant that your Azure resources are managed with, some organizations employ an alt-account strategy. In that case, your cluster admins' alt account(s) might satisfy this step.
 
    ```bash
-   export TENANTDOMAIN_K8SRBAC=$(az ad signed-in-user show --query 'userPrincipalName' -o tsv | cut -d '@' -f 2 | sed 's/\"//')
-   export AADOBJECTNAME_USER_CLUSTERADMIN=bu0001a000500-admin
-   export AADOBJECTID_USER_CLUSTERADMIN=$(az ad user create --display-name=${AADOBJECTNAME_USER_CLUSTERADMIN} --user-principal-name ${AADOBJECTNAME_USER_CLUSTERADMIN}@${TENANTDOMAIN_K8SRBAC} --force-change-password-next-login --password ChangeMebu0001a0005AdminChangeMe --query objectId -o tsv)
+   TENANTDOMAIN_K8SRBAC=$(az ad signed-in-user show --query 'userPrincipalName' -o tsv | cut -d '@' -f 2 | sed 's/\"//')
+   AADOBJECTNAME_USER_CLUSTERADMIN=bu0001a000500-admin
+   AADOBJECTID_USER_CLUSTERADMIN=$(az ad user create --display-name=${AADOBJECTNAME_USER_CLUSTERADMIN} --user-principal-name ${AADOBJECTNAME_USER_CLUSTERADMIN}@${TENANTDOMAIN_K8SRBAC} --force-change-password-next-login --password ChangeMebu0001a0005AdminChangeMe --query objectId -o tsv)
    ```
 
 1. Add the cluster admin user(s) to the cluster admin security group.
@@ -74,9 +71,9 @@ Following the steps below you will result in an Azure AD configuration that will
 
    Kubernetes has [built-in, user-facing roles](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles) like _admin_, _edit_, and _view_, generally to be applied at namespace levels, which can also be mapped to various Azure AD Groups. Likewise, if you know you'll have additional _custom_ Kubernetes roles created as part of your separation of duties authentication schema, you can create those security groups now as well. For this walk through, you do NOT need to map any of these additional roles.
 
-   In the [`user-facing-cluster-role-aad-group.yaml` file](./cluster-baseline-settings/user-facing-cluster-role-aad-group.yaml), is an example of how you could apply the built-in, user-facing roles at the cluster level (not any particular namespace). If for some reason, you need to provide cluster-wide _edit_ or _view_ permissions, or you needed to perform more cluster admin group bindings, you can uncomment the necessary resource(s) in the file and replace the `<replace-with-an-aad-group-object-id-for-this-cluster-role-binding>` placeholders with corresponding Azure AD security group Object ID you've selected. By default, in this implementation, no additional _cluster_ roles will be bound other than `cluster-admin`.
+   In the [`cluster-rbac.yaml` file](./cluster-manifests/cluster-rbac.yaml) and the various namespaced [`rbac.yaml files`](./cluster-manifests/cluster-baseline-settings/rbac.yaml), you can uncomment what you wish and replace the `<replace-with-an-aad-group-object-id...>` placeholders with corresponding new or existing AD groups that map to their purpose for this cluster or namespace. You do not need to perform this action for this walk through; they are only here for your reference. By default, in this implementation, no additional _cluster_ roles will be bound other than `cluster-admin`.
 
-   :bulb: Alternatively, you can make these additional group associations to [Azure RBAC roles](https://docs.microsoft.com/azure/aks/manage-azure-rbac). At the time of this writing, this feature is still in _preview_. This allows you to treat Kubernetes Cluster API RBAC, in part, as if they were Azure RBAC roles, allowing you to manage cluster-level permissions as Azure resources (Azure Role Assignments) instead of Kubernetes `ClusterRoleBinding` resources. This reference implementation has not beed validated with that feature.
+   :bulb: Alternatively/Additionally, you can make some of these group associations to [Azure RBAC roles](https://docs.microsoft.com/azure/aks/manage-azure-rbac). At the time of this writing, this feature is still in _preview_. This reference implementation has not been validated with that feature.
 
 ### Next step
 

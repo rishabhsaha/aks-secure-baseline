@@ -9,7 +9,7 @@ This is the starting point for the end-to-end instructions on deploying the [AKS
    > :warning: The user initiating the following deployment process _must_ have the following minimal set of Azure Role-Based Access Control (RBAC) roles:
    >
    > * [Contributor role](https://docs.microsoft.com/azure/role-based-access-control/built-in-roles#contributor) is _required_ at the _subscription_ level to have the ability to create resource groups, create & assign policy, and perform deployments at both the subscription and resource group level.
-   > * [User Access Administrator role](https://docs.microsoft.com/azure/role-based-access-control/built-in-roles#user-access-administrator) is _required_ at the subscription level since you'll be performing role assignments to managed identities.
+   > * [User Access Administrator role](https://docs.microsoft.com/azure/role-based-access-control/built-in-roles#user-access-administrator) is _required_ at the subscription level since you'll be performing role assignments to managed identities across various resource groups.
 
 1. An Azure AD tenant to associate your Kubernetes RBAC Cluster API authentication to.
 
@@ -34,8 +34,6 @@ This is the starting point for the end-to-end instructions on deploying the [AKS
    git clone https://github.com/${GITHUB_ACCOUNT_NAME}/aks-regulated-baseline.git
    cd aks-regulated-baseline
    ```
-
-   If you wish, you may make your cloned git repository _private_; no future instructions depend on this repo being public. You may continue following these instructions in your own repo, or you may continue using this repo as your guide.
 
    > :bulb: The steps shown here and elsewhere in the reference implementation use Bash shell commands. On Windows, you can use the [Windows Subsystem for Linux](https://docs.microsoft.com/windows/wsl/about#what-is-wsl-2) to run Bash.
 

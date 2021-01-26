@@ -10,7 +10,7 @@
 #subjects:
 #- apiGroup: rbac.authorization.k8s.io
 #  kind: Group
-#  name: <replace-with-an-aad-group-object-id-for-this-cluster-wide-maximally-privileged-admin-role>
+#  name: <replace-with-an-aad-group-object-id-for-this-cluster-wide-maximally-privileged-admin-role -- consider mapping all cluster-admin roles via the cluster's arm template instead of here.>
 #---
 #apiVersion: rbac.authorization.k8s.io/v1
 #kind: ClusterRoleBinding

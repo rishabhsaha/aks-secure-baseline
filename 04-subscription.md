@@ -25,6 +25,7 @@ Both Azure Kubernetes Service and Azure Image Builder Service use a concept of a
 To help govern our resources, there are policies we apply over the scope of these resource groups. These policies will also be created in the steps below.
 
 | Policy Name                    | Scope                           | Purpose                                                                                           |
+|--------------------------------|---------------------------------|---------------------------------------------------------------------------------------------------|
 | Enable Azure Defender Standard | Subscription                    | Ensures that Azure Defender for Kubernetes, Container Service, and Key Vault are always enabled.  |
 | Allowed resource types         | rg-enterprise-networking-hubs   | Restricts the hub resource group to just relevant networking resources.                           |
 | Allowed resource types         | rg-enterprise-networking-spokes | Restricts the spokes resource group to just relevant networking resources.                        |

@@ -1,10 +1,5 @@
 # Deploy the Regulated Industries AKS Cluster
 
-TODO:
-
-* Consider moving Azure Bastion out of the hub and into the landing zone (IP & Subnet in spoke, Service in landing zone -- update NSGs as needed).
-* Apply More Policies akin to the "no public AKS clusters".
-
 Now that the [hub-spoke network is provisioned](./04-networking.md), the next step in the [AKS secure Baseline reference implementation](./) is deploying the AKS cluster and its adjacent Azure resources.
 
 ## Steps
@@ -33,7 +28,7 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
 
 ## Container registry note
 
-:warning: To aid in ease of deployment of this cluster and your experimentation with workloads, Azure Policy is currently configured to allow your cluster to pull images from _public container registries_ such as Docker Hub and Quay. For a production system, you'll want to update Azure Policy parameter named `allowedContainerImagesRegex` in your `cluster-stamp.json` file to only list those container registries that you are willing to take a dependency on and what namespaces those policies apply to. This will protect your cluster from unapproved registries being used; which may prevent issues while trying to pull images from a registry which doesn't provide an appropriate SLO and also help meet compliance needs for your container image supply chain.
+In this reference implementation, Azure Policy and Azure Firewall are blocking all public registries other than Microsoft Container Registry and your private ACR instance deployed with this reference implementation. This will protect your cluster from unapproved registries being used; which may prevent issues while trying to pull images from a registry which doesn't provide an appropriate SLO and also help meet compliance needs for your container image supply chain.
 
 This deployment creates an SLA-backed Azure Container Registry for your cluster's needs. Your organization may have a central container registry for you to use, or your registry may be tied specifically to your application's infrastructure (as demonstrated in this implementation). **Only use container registries that satisfy the availability and compliance needs of your workload.**
 
