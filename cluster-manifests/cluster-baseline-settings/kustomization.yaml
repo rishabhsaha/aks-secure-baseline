@@ -7,6 +7,8 @@ resources:
 - networkpolicy-denyall.yaml
 - limit-range.yaml
 - rbac.yaml
+- secrets-store-csi-driver.yaml
+- secrets-store-keyvault-provider.yaml
 - fim-standin.yaml
 - av-standin.yaml
 - kured.yaml

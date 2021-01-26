@@ -5,8 +5,8 @@ metadata:
   name: default
 spec:
   hard:
-    requests.cpu: 4000m
-    requests.memory: 600Mi
+    requests.cpu: 5000m
+    requests.memory: 1000Mi
     requests.storage: "0"
     limits.cpu: 10000m
     limits.memory: 2000Mi
