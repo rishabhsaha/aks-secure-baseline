@@ -567,47 +567,20 @@
                 "natRuleCollections": [],
                 "networkRuleCollections": [
                     {
-                        "name": "org-wide-block",
-                        "properties": {
-                            "action": {
-                                "type": "Deny"
-                            },
-                            "priority": 100,
-                            "rules": [
-                                {
-                                    "name": "ICMP Protocol",
-                                    "description": "Block all outgoing ICMP",
-                                    "sourceAddresses": [
-                                        "*"
-                                    ],
-                                    "protocols": [
-                                        "ICMP"
-                                    ],
-                                    "destinationPorts": [
-                                        "*"
-                                    ],
-                                    "destinationAddresses": [
-                                        "*"
-                                    ]
-                                }
-                            ]
-                        }
-                    },
-                    {
-                        "name": "AKS-Global-Requirements",
+                        "name": "allow-ntp",
                         "properties": {
                             "action": {
                                 "type": "Allow"
                             },
-                            "priority": 1000,
+                            "priority": 100,
                             "rules": [
                                 {
                                     "name": "ntp",
-                                    "description": "Network Time Protocol (NTP) time synchronization for nodepool nodes. This rule works because we forward DNS to the FW.",
+                                    "description": "Network Time Protocol (NTP) time synchronization for image builder VMs, nodepool nodes, and jumpboxes.",
                                     "sourceIpGroups": [
+                                        "[resourceId('Microsoft.Network/ipGroups', variables('imageBuilderIpGroupName'))]",
                                         "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]",
-                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksJumpBoxIpGroupName'))]",
-                                        "[resourceId('Microsoft.Network/ipGroups', variables('imageBuilderIpGroupName'))]"
+                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksJumpBoxIpGroupName'))]"
                                     ],
                                     "protocols": [
                                         "UDP"

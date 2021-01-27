@@ -523,27 +523,27 @@
                 "natRuleCollections": [],
                 "networkRuleCollections": [
                     {
-                        "name": "org-wide-block",
+                        "name": "allow-ntp",
                         "properties": {
                             "action": {
-                                "type": "Deny"
+                                "type": "Allow"
                             },
                             "priority": 100,
                             "rules": [
                                 {
-                                    "name": "ICMP Protocol",
-                                    "description": "Block all outgoing ICMP",
-                                    "sourceAddresses": [
-                                        "*"
+                                    "name": "ntp",
+                                    "description": "Network Time Protocol (NTP) time synchronization for image builder VMs.",
+                                    "sourceIpGroups": [
+                                        "[resourceId('Microsoft.Network/ipGroups', variables('imageBuilderIpGroupName'))]"
                                     ],
                                     "protocols": [
-                                        "ICMP"
+                                        "UDP"
                                     ],
                                     "destinationPorts": [
-                                        "*"
+                                        "123"
                                     ],
-                                    "destinationAddresses": [
-                                        "*"
+                                    "destinationFqdns": [
+                                        "ntp.ubuntu.com"
                                     ]
                                 }
                             ]

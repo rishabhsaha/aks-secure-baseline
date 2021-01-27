@@ -500,35 +500,7 @@
                     }
                 ],
                 "natRuleCollections": [],
-                "networkRuleCollections": [
-                    {
-                        "name": "org-wide-block",
-                        "properties": {
-                            "action": {
-                                "type": "Deny"
-                            },
-                            "priority": 100,
-                            "rules": [
-                                {
-                                    "name": "ICMP Protocol",
-                                    "description": "Block all outgoing ICMP",
-                                    "sourceAddresses": [
-                                        "*"
-                                    ],
-                                    "protocols": [
-                                        "ICMP"
-                                    ],
-                                    "destinationPorts": [
-                                        "*"
-                                    ],
-                                    "destinationAddresses": [
-                                        "*"
-                                    ]
-                                }
-                            ]
-                        }
-                    }
-                ],
+                "networkRuleCollections": [],
                 "applicationRuleCollections": []
             },
             "resources": [
