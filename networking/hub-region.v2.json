@@ -603,9 +603,11 @@
                             "rules": [
                                 {
                                     "name": "ntp",
-                                    "description": "Network Time Protocol (NTP) time synchronization for nodepool nodes. These use ubuntu's NTP pools.",
+                                    "description": "Network Time Protocol (NTP) time synchronization for nodepool nodes. This rule works because we forward DNS to the FW.",
                                     "sourceIpGroups": [
-                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
+                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]",
+                                        "[resourceId('Microsoft.Network/ipGroups', variables('aksJumpBoxIpGroupName'))]",
+                                        "[resourceId('Microsoft.Network/ipGroups', variables('imageBuilderIpGroupName'))]"
                                     ],
                                     "protocols": [
                                         "UDP"
@@ -613,15 +615,8 @@
                                     "destinationPorts": [
                                         "123"
                                     ],
-                                    /* Ideal -- but not complete enough - e.g. finding requests resolved by the pool that are being blocked."destinationFqdns": [
-                                        "ntp.ubuntu.com",
-                                        "0.ubuntu.pool.ntp.org",
-                                        "1.ubuntu.pool.ntp.org",
-                                        "2.ubuntu.pool.ntp.org",
-                                        "3.ubuntu.pool.ntp.org"
-                                    ]*/
-                                    "destinationAddresses": [
-                                        "*"
+                                    "destinationFqdns": [
+                                        "ntp.ubuntu.com"
                                     ]
                                 }
                             ]
@@ -637,7 +632,7 @@
                             },
                             "priority": 200,
                             "rules": [
-                                {
+                                /*{
                                     "name": "microsoft-container-registry",
                                     "description": "Required to access images in Microsoft Container Registry (MCR). This registry contains first-party images (E.g., coreDNS, etc.). These images are required for the correct creation and functioning of the cluster, including scale and upgrade operations.",
                                     "sourceIpGroups": [
@@ -653,10 +648,10 @@
                                         "mcr.microsoft.com",
                                         "*.data.mcr.microsoft.com"
                                     ]
-                                },
+                                },*/
                                 {
-                                    "name": "management-plane",
-                                    "description": "This address is required for Kubernetes GET/PUT operations.",
+                                    "name": "runtime",
+                                    "description": "This covers all runtime requirements for AKS (sans addons). If you wish to use a more restricted set of values than what this provides, see: https://docs.microsoft.com/azure/firewall/protect-azure-kubernetes-service and https://docs.microsoft.com/azure/aks/limit-egress-traffic#required-outbound-network-rules-and-fqdns-for-aks-clusters and remove this entry",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                     ],
@@ -670,7 +665,7 @@
                                         "AzureKubernetesService"
                                     ]
                                 },
-                                {
+                                /*{
                                     "name": "aad-auth",
                                     "description": "This address is required for Azure Active Directory authentication.",
                                     "sourceIpGroups": [
@@ -735,7 +730,7 @@
                                         "azure.archive.ubuntu.com",
                                         "changelogs.ubuntu.com"
                                     ]
-                                },
+                                },*/
                                 {
                                     "name": "azure-monitor-addon",
                                     "description": "All required for Azure Monitor for containers per https://docs.microsoft.com/azure/aks/limit-egress-traffic#azure-monitor-for-containers - Optionally you can restrict the ods and oms wildcards to JUST your clusters' log analytics instances.",
@@ -756,7 +751,7 @@
                                 },
                                 {
                                     "name": "azure-policy-addon",
-                                    "description": "All required for Azure Policy per https://docs.microsoft.com/azure/aks/limit-egress-traffic#azure-policy",
+                                    "description": "All required for Azure Policy per https://docs.microsoft.com/azure/aks/limit-egress-traffic#azure-policy. If not using the AzureKubernetesService fqdnTag, you must also add gov-prod-policy-data.trafficmanager.net, raw.githubusercontent.com, and dc.services.visualstudio.com",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('aksIpGroupName'))]"
                                     ],
@@ -767,9 +762,6 @@
                                         }
                                     ],
                                     "targetFqdns": [
-                                        "gov-prod-policy-data.trafficmanager.net",
-                                        "raw.githubusercontent.com",
-                                        "dc.services.visualstudio.com",
                                         "data.policy.core.windows.net",
                                         "store.policy.core.windows.net"
                                     ]
@@ -801,7 +793,7 @@
                                         "github.com",
                                         "api.github.com"
                                     ]
-                                },
+                                }/*,
                                 {
                                     "name": "pull-flux-images",
                                     "description": "Allows pulling images from your private container registry(ies). Feel free to restrict further.",
@@ -818,7 +810,7 @@
                                         "*.azurecr.io",
                                         "*.privatelink.azurecr.io"
                                     ]
-                                }
+                                }*/
                             ]
                         }
                     },
@@ -864,7 +856,7 @@
                                 },
                                 {
                                     "name": "apt-get",
-                                    "description": "This is required as the Packer VM performs a package upgrade.",
+                                    "description": "This is required as the Packer VM performs a package upgrade. [Step performed in the referenced jump box building process. Not needed if your jump box building process doesn't do this.]",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('imageBuilderIpGroupName'))]"
                                     ],
@@ -887,7 +879,7 @@
                                 },
                                 {
                                     "name": "install-azcli",
-                                    "description": "This is required as the Packer VM needs to install Azure CLI.",
+                                    "description": "This is required as the Packer VM needs to install Azure CLI. [Step performed in the referenced jump box building process. Not needed if your jump box building process doesn't do this.]",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('imageBuilderIpGroupName'))]"
                                     ],
@@ -905,7 +897,7 @@
                                 },
                                 {
                                     "name": "install-k8scli",
-                                    "description": "This is required as the Packer VMsneeds to install k8s cli tooling.",
+                                    "description": "This is required as the Packer VMsneeds to install k8s cli tooling. [Step performed in the referenced jump box building process. Not needed if your jump box building process doesn't do this.]",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('imageBuilderIpGroupName'))]"
                                     ],
@@ -923,7 +915,7 @@
                                 },
                                 {
                                     "name": "install-helm",
-                                    "description": "This is required as the Packer VMs needs to install helm.",
+                                    "description": "This is required as the Packer VMs needs to install helm. [Step performed in the referenced jump box building process. Not needed if your jump box building process doesn't do this.]",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('imageBuilderIpGroupName'))]"
                                     ],
@@ -941,7 +933,7 @@
                                 },
                                 {
                                     "name": "install-flux",
-                                    "description": "This is required as the Packer VMs needs to install flux.",
+                                    "description": "This is required as the Packer VMs needs to install flux. [Step performed in the referenced jump box building process. Not needed if your jump box building process doesn't do this.]",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('imageBuilderIpGroupName'))]"
                                     ],
@@ -960,7 +952,7 @@
                                 },
                                 {
                                     "name": "install-open-service-mesh",
-                                    "description": "This is required as the Packer VMs needs to install osm.",
+                                    "description": "This is required as the Packer VMs needs to install osm. [Step performed in the referenced jump box building process. Not needed if your jump box building process doesn't do this.]",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('imageBuilderIpGroupName'))]"
                                     ],
@@ -977,7 +969,7 @@
                                 },
                                 {
                                     "name": "install-terraform",
-                                    "description": "This is required as the Packer VMs needs to install terraform.",
+                                    "description": "This is required as the Packer VMs needs to install terraform. [Step performed in the referenced jump box building process. Not needed if your jump box building process doesn't do this.]",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('imageBuilderIpGroupName'))]"
                                     ],
@@ -1052,7 +1044,7 @@
                                 },*/
                                 {
                                     "name": "github",
-                                    "description": "Allow pulling things down from github.",
+                                    "description": "Allow pulling things down from github. [Only a requirement of this walkthrough because we deploy some manifests that you clone from your repo.]",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('aksJumpBoxIpGroupName'))]"
                                     ],
