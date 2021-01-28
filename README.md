@@ -66,17 +66,17 @@ There are considerations that must be addressed before you start deploying your 
 
 ### 2. Build regional networking hub
 
-* [ ] [Build the regional hub](./04-networking-hub.md) to control and monitor spoke traffic.
+* [ ] [Build the regional hub](./05-networking-hub.md) to control and monitor spoke traffic.
 
 ### 3. Build cluster jump box image
 
-* [ ] [Build VM image in isolated network spoke](./05-aks-jumpboximage.md).
+* [ ] [Build VM image in isolated network spoke](./06-aks-jumpboximage.md).
 
 ### 4. Deploying the cluster
 
-* [ ] [Deploy the target network spoke](./06-cluster-networking.md) that the cluster will be homed to.
-* [ ] [Deploy the AKS cluster and supporting services](./05-aks-cluster.md).
-* [ ] [Place the cluster under GitOps management](./06-gitops.md).
+* [ ] [Deploy the target network spoke](./07-cluster-networking.md) that the cluster will be homed to.
+* [ ] [Deploy the AKS cluster and supporting services](./08-aks-cluster.md).
+* [ ] [Place the cluster under GitOps management](./09-gitops.md).
 
 We perform the prior steps manually here for you to understand the involved components, but we advocate for an automated DevOps process. Therefore, incorporate the prior steps into your CI/CD pipeline, as you would any infrastructure as code (IaC). We have included [a starter GitHub workflow](./github-workflow/aks-deploy.yaml) that demonstrates this.
 
@@ -84,21 +84,21 @@ We perform the prior steps manually here for you to understand the involved comp
 
 Without a workload deployed to the cluster it will be hard to see how these decisions come together to work as a reliable application platform for your business. The deployment of this workload would typically follow a CI/CD pattern and may involve even more advanced deployment strategies (blue/green, etc). The following steps represent a manual deployment, suitable for illustration purposes of this infrastructure.
 
-* [ ] Just like the cluster, there are [workload prerequisites to address](./07-workload-prerequisites.md)
-* [ ] [Configure AKS Ingress Controller with Azure Key Vault integration](./08-secret-managment-and-ingress-controller.md)
-* [ ] [Deploy the workload](./09-workload.md)
+* [ ] Just like the cluster, there are [workload prerequisites to address](./10-workload-prerequisites.md)
+* [ ] [Configure AKS Ingress Controller with Azure Key Vault integration](./11-secret-managment-and-ingress-controller.md)
+* [ ] [Deploy the workload](./12-workload.md)
 
 ### 6. :checkered_flag: Validation
 
 Now that the cluster and the sample workload is deployed; now it's time to look at how the cluster is functioning.
 
-* [ ] [Perform end-to-end deployment validation](./10-validation.md)
+* [ ] [Perform end-to-end deployment validation](./13-validation.md)
 
 ## :broom: Clean up resources
 
 Most of the Azure resources deployed in the prior steps will incur ongoing charges unless removed.
 
-* [ ] [Cleanup all resources](./11-cleanup.md)
+* [ ] [Cleanup all resources](./14-cleanup.md)
 
 ## Inner-loop development scripts
 

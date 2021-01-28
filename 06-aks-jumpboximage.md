@@ -90,7 +90,7 @@ Now that we have our image building network created, egressing through our hub, 
    az image builder run -n $IMAGE_TEMPLATE_NAME -g rg-bu0001a0005
    ```
 
-   As mentioned, this does take a significant amount of time to run while the image building is happening. Feel free to read ahead, but you should not proceed until this is complete. If you need to perform this reference implementation walk through multiple times, we suggest you create this image in a place that can survive the deleting and recreating of this reference implementation to save yourself the time in a future execution of this guide.
+   This does take a significant amount of time to run while the image building is happening. Feel free to read ahead, but you should not proceed until this is complete. If you need to perform this reference implementation walk through multiple times, we suggest you create this image in a place that can survive the deleting and recreating of this reference implementation to save yourself the time in a future execution of this guide.
 
 1. Delete image building resources. _Optional._
 
