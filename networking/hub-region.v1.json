@@ -593,7 +593,7 @@
                                 },
                                 {
                                     "name": "apt-get",
-                                    "description": "This is required as the Packer VM performs a package upgrade.",
+                                    "description": "This is required as the Packer VM performs a package upgrade. [Step performed in the referenced jump box building process. Not needed if your jump box building process doesn't do this.]",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('imageBuilderIpGroupName'))]"
                                     ],
@@ -616,7 +616,7 @@
                                 },
                                 {
                                     "name": "install-azcli",
-                                    "description": "This is required as the Packer VM needs to install Azure CLI.",
+                                    "description": "This is required as the Packer VM needs to install Azure CLI. [Step performed in the referenced jump box building process. Not needed if your jump box building process doesn't do this.]",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('imageBuilderIpGroupName'))]"
                                     ],
@@ -634,7 +634,7 @@
                                 },
                                 {
                                     "name": "install-k8scli",
-                                    "description": "This is required as the Packer VMsneeds to install k8s cli tooling.",
+                                    "description": "This is required as the Packer VM needs to install k8s cli tooling. [Step performed in the referenced jump box building process. Not needed if your jump box building process doesn't do this.]",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('imageBuilderIpGroupName'))]"
                                     ],
@@ -647,12 +647,13 @@
                                     "targetFqdns": [
                                         "storage.googleapis.com",
                                         "api.github.com",
+                                        "github-releases.githubusercontent.com",
                                         "github.com"
                                     ]
                                 },
                                 {
                                     "name": "install-helm",
-                                    "description": "This is required as the Packer VMs needs to install helm.",
+                                    "description": "This is required as the Packer VM needs to install helm cli. [Step performed in the referenced jump box building process. Not needed if your jump box building process doesn't do this.]",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('imageBuilderIpGroupName'))]"
                                     ],
@@ -665,12 +666,12 @@
                                     "targetFqdns": [
                                         "raw.githubusercontent.com",
                                         "get.helm.sh",
-                                        "*.s3.amazonaws.com"
+                                        "github-releases.githubusercontent.com"
                                     ]
                                 },
                                 {
                                     "name": "install-flux",
-                                    "description": "This is required as the Packer VMs needs to install flux.",
+                                    "description": "This is required as the Packer VMs needs to install flux cli. [Step performed in the referenced jump box building process. Not needed if your jump box building process doesn't do this.]",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('imageBuilderIpGroupName'))]"
                                     ],
@@ -684,12 +685,12 @@
                                         "raw.githubusercontent.com",
                                         "api.github.com",
                                         "toolkit.fluxcd.io",
-                                        "*.s3.amazonaws.com"
+                                        "github-releases.githubusercontent.com"
                                     ]
                                 },
                                 {
                                     "name": "install-open-service-mesh",
-                                    "description": "This is required as the Packer VMs needs to install osm.",
+                                    "description": "This is required as the Packer VMs needs to install open service mesh cli. [Step performed in the referenced jump box building process. Not needed if your jump box building process doesn't do this.]",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('imageBuilderIpGroupName'))]"
                                     ],
@@ -701,12 +702,12 @@
                                     ],
                                     "targetFqdns": [
                                         "github.com",
-                                        "*.s3.amazonaws.com"
+                                        "github-releases.githubusercontent.com"
                                     ]
                                 },
                                 {
                                     "name": "install-terraform",
-                                    "description": "This is required as the Packer VMs needs to install terraform.",
+                                    "description": "This is required as the Packer VMs needs to install HashiCorp Terraform cli. [Step performed in the referenced jump box building process. Not needed if your jump box building process doesn't do this.]",
                                     "sourceIpGroups": [
                                         "[resourceId('Microsoft.Network/ipGroups', variables('imageBuilderIpGroupName'))]"
                                     ],
