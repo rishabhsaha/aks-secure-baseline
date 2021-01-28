@@ -94,9 +94,9 @@
             }
         },
         {
-            "name": "[guid(resourceGroup().id, 'Azure Firewalls')]",
             "type": "Microsoft.Insights/workbooks",
             "apiVersion": "2018-06-17-preview",
+            "name": "[guid(resourceGroup().id, 'Azure Firewalls')]",
             "location": "[parameters('location')]",
             "comments": "Deploys the default Azure Firewall workbook from https://github.com/Azure/Azure-Network-Security/blob/master/Azure%20Firewall/Azure%20Monitor%20Workbook/Azure%20Firewall_ARM.json",
             "dependsOn": [
