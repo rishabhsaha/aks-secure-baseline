@@ -34,14 +34,15 @@ Your github repo will be the source of truth for your cluster's configuration. T
    az acr import --source docker.io/falcosecurity/falco:0.26.2 -n $ACR_NAME
    az acr import --source docker.io/library/busybox:1.33.0 -n $ACR_NAME
    az acr import --source docker.io/weaveworks/kured:1.6.1 -n $ACR_NAME
+   az acr import --source docker.io/openservicemesh/osm-controller:v0.6.1 -n $ACR_NAME
+   az acr import --source docker.io/openservicemesh/init:v0.6.1 -n $ACR_NAME
+   az acr import --source docker.io/envoyproxy/envoy-alpine:v1.15.0 -n $ACR_NAME
    ```
 
 1. Update kustomization files to use images from your container registry.
 
-   Update the two `newName:` values in `cluster-manifests/flux-system/kustomization.yaml` to your container registry instead of the default public container registry.
-
    ```bash
-   cd k8s-resources
+   cd cluster-manifests
    grep -lr REPLACE_ME_WITH_YOUR_ACRNAME --include=kustomization.yaml | xargs sed -i "s/REPLACE_ME_WITH_YOUR_ACRNAME/${ACR_NAME}/g"
 
    git commit -a -m "Update bootstrap deployments to use images from my ACR instead of public container registries."
@@ -50,7 +51,7 @@ Your github repo will be the source of truth for your cluster's configuration. T
 1. Update flux to pull from your repo instead of the mspnp repo.
 
    ```bash
-   sed -i "s/REPLACE_ME_WITH_YOUR_GITHUBACCOUNTNAME/${GITHUB_ACCOUNT_NAME}/" cluster-manifests/flux-system/gotk-sync.yaml
+   sed -i "s/REPLACE_ME_WITH_YOUR_GITHUBACCOUNTNAME/${GITHUB_ACCOUNT_NAME}/" flux-system/gotk-sync.yaml
 
    git commit -a -m "Update Flux to pull from my fork instead of the upstream Microsoft repo."
    ```
@@ -84,7 +85,8 @@ Your github repo will be the source of truth for your cluster's configuration. T
 
    ```bash
    az login
-   # This will give you a link to https://microsoft.com/devicelogin where you can enter the provided code and perform authentication.
+   # This will give you a link to https://microsoft.com/devicelogin where you can enter 
+   # the provided code and perform authentication.
 
    # Ensure you're on the correct subscription
    az account show
@@ -125,7 +127,7 @@ Your github repo will be the source of truth for your cluster's configuration. T
 1. From your Azure Bastion connection, bootstrap Flux.
 
    ```bash
-   git clone https://github.com/${GITHUB_ACCOUNT_NAME}/aks-regulated-cluster
+   git clone https://github.com/[[YOUR_GITHUB_ACCOUNT_NAME]]/aks-regulated-cluster
    cd aks-regulated-cluster
 
    kubectl apply -k cluster-manifests/flux-system
@@ -138,7 +140,7 @@ Your github repo will be the source of truth for your cluster's configuration. T
    unable to recognize ".": no matches for kind "GitRepository" in version "source.toolkit.fluxcd.io/v1beta1"
    ```
 
-   Then execute the same command again.  TODO: There is a resource race condition that I'd like to solve before we go live here.
+   Then execute the same command again.  **TODO: There is a resource race condition that I'd like to solve before we go live here.**
 
    ```bash
    kubectl wait --namespace flux-system --for=condition=available deployment/source-controller --timeout=90s
