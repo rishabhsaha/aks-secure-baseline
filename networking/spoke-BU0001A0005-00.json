@@ -47,9 +47,9 @@
     },
     "resources": [
         {
-            "name": "[variables('routeTableName')]",
             "type": "Microsoft.Network/routeTables",
             "apiVersion": "2020-05-01",
+            "name": "[variables('routeTableName')]",
             "location": "[parameters('location')]",
             "comments": "Next hop to regional hub Azure Firewall",
             "properties": {
@@ -66,9 +66,9 @@
             }
         },
         {
-            "name": "[variables('imageBuilderSubnetNsgName')]",
             "type": "Microsoft.Network/networkSecurityGroups",
             "apiVersion": "2020-05-01",
+            "name": "[variables('imageBuilderSubnetNsgName')]",
             "location": "[parameters('location')]",
             "comments": "NSG on the jumpbox image builder subnet.",
             "properties": {
@@ -189,9 +189,9 @@
             },
             "resources": [
                 {
-                    "name": "Microsoft.Insights/toHub",
                     "type": "providers/diagnosticSettings",
                     "apiVersion": "2017-05-01-preview",
+                    "name": "Microsoft.Insights/toHub",
                     "dependsOn": [
                         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('imageBuilderSubnetNsgName'))]"
                     ],
@@ -212,9 +212,9 @@
             ]
         },
         {
-            "name": "[variables('imageBuilderVNetName')]",
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2020-05-01",
+            "name": "[variables('imageBuilderVNetName')]",
             "location": "[parameters('location')]",
             "comments": "This vnet is used exclusively for jumpbox image builds.",
             "dependsOn": [
@@ -251,9 +251,9 @@
             },
             "resources": [
                 {
-                    "name": "[variables('toHubPeeringName')]",
                     "type": "virtualNetworkPeerings",
                     "apiVersion": "2020-05-01",
+                    "name": "[variables('toHubPeeringName')]",
                     "comments": "Peer to regional hub.",
                     "dependsOn": [
                         "[resourceId('Microsoft.Network/virtualNetworks', variables('imageBuilderVNetName'))]"
@@ -269,9 +269,9 @@
                     }
                 },
                 {
-                    "name": "Microsoft.Insights/toHub",
                     "type": "providers/diagnosticSettings",
                     "apiVersion": "2017-05-01-preview",
+                    "name": "Microsoft.Insights/toHub",
                     "dependsOn": [
                         "[resourceId('Microsoft.Network/virtualNetworks', variables('imageBuilderVNetName'))]"
                     ],
@@ -288,9 +288,9 @@
             ]
         },
         {
-            "name": "[concat('CreateHubTo', variables('imageBuilderVNetName'), 'Peer')]",
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2020-06-01",
+            "name": "[concat('CreateHubTo', variables('imageBuilderVNetName'), 'Peer')]",
             "resourceGroup": "[variables('hubRgName')]",
             "comments": "Sub incremental deployment to perform hub-to-spoke peering",
             "dependsOn": [
@@ -303,9 +303,9 @@
                     "contentVersion": "1.0.0.0",
                     "resources": [
                         {
-                            "name": "[concat(variables('hubNetworkName'), '/hub-to-', variables('imageBuilderVNetName'))]",
                             "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
                             "apiVersion": "2020-05-01",
+                            "name": "[concat(variables('hubNetworkName'), '/hub-to-', variables('imageBuilderVNetName'))]",
                             "properties": {
                                 "remoteVirtualNetwork": {
                                     "id": "[resourceId('Microsoft.Network/virtualNetworks', variables('imageBuilderVNetName'))]"

@@ -36,4 +36,4 @@ Since this reference implementation is expected to be deployed isolated from exi
 
 ### Next step
 
-:arrow_forward: [Create the AKS jump box image](./05-aks-jumpboximage.md).
+:arrow_forward: [Create the AKS jump box image](./06-aks-jumpboximage.md).
