@@ -588,9 +588,12 @@
                                     "destinationPorts": [
                                         "123"
                                     ],
+                                    "destinationAddresses": [
+                                        "*"
+                                    ]/*,
                                     "destinationFqdns": [
                                         "ntp.ubuntu.com"
-                                    ]
+                                    ]*/
                                 }
                             ]
                         }

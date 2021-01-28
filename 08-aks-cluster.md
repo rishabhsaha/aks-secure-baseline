@@ -1,6 +1,8 @@
 # Deploy the Regulated Industries AKS Cluster
 
-Now that the [hub-spoke network is provisioned](./04-networking.md), the next step in the [AKS secure Baseline reference implementation](./) is deploying the AKS cluster and its adjacent Azure resources.
+Now that the [hub-spoke network is provisioned](./07-cluster-networking.md), the next step in the [AKS Baseline reference implementation for regulated clusters](./) is deploying the AKS cluster and its adjacent Azure resources.
+
+**TODO: Add jump box user setup page.**
 
 ## Steps
 
@@ -20,7 +22,7 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
 1. Deploy the cluster ARM template.
 
    ```bash
-   # [This takes about 15 minutes.]
+   # [This takes about 20 minutes.]
    az deployment group create -g rg-bu0001a0005 -f cluster-stamp.json -p targetVnetResourceId=${RESOURCEID_VNET_CLUSTERSPOKE} clusterAdminAadGroupObjectId=${AADOBJECTID_GROUP_CLUSTERADMIN} k8sControlPlaneAuthorizationTenantId=${TENANTID_K8SRBAC} appGatewayListenerCertificate=${APP_GATEWAY_LISTENER_CERTIFICATE} aksIngressControllerCertificate=${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64} jumpBoxImageResourceId=${RESOURCEID_IMAGE_JUMPBOX}
    ```
 
@@ -28,10 +30,10 @@ Now that the [hub-spoke network is provisioned](./04-networking.md), the next st
 
 ## Container registry note
 
-In this reference implementation, Azure Policy and Azure Firewall are blocking all public registries other than Microsoft Container Registry and your private ACR instance deployed with this reference implementation. This will protect your cluster from unapproved registries being used; which may prevent issues while trying to pull images from a registry which doesn't provide an appropriate SLO and also help meet compliance needs for your container image supply chain.
+In this reference implementation, Azure Policy _and_ Azure Firewall are blocking all container registries other than Microsoft Container Registry and your private ACR instance deployed with this reference implementation. This will protect your cluster from unapproved registries being used; which may prevent issues while trying to pull images from a registry which doesn't provide an appropriate SLO and also help meet compliance needs for your container image supply chain.
 
 This deployment creates an SLA-backed Azure Container Registry for your cluster's needs. Your organization may have a central container registry for you to use, or your registry may be tied specifically to your application's infrastructure (as demonstrated in this implementation). **Only use container registries that satisfy the availability and compliance needs of your workload.**
 
 ### Next step
 
-:arrow_forward: [Place the cluster under GitOps management](./06-gitops.md)
+:arrow_forward: [Place the cluster under GitOps management](./09-gitops.md)
