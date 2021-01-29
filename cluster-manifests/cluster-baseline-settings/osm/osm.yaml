@@ -1,14 +1,28 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: osm
+  name: cluster-osm
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: osm-config
+  namespace: cluster-baseline-settings
+data:
+  permissive_traffic_policy_mode: "false"
+  egress: "false"
+  envoy_log_level: "info"
+  enable_debug_server: "false"
+  prometheus_scraping: "true"
+  tracing_enable: "false"
+  use_https_ingress: "true"
+  service_cert_validity_duration: "24h"
   namespace: cluster-baseline-settings
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: osm
-  namespace: cluster-baseline-settings
+  name: cluster-osm
 rules:
   - apiGroups: ["apps"]
     resources: ["daemonsets", "deployments", "replicasets", "statefulsets"]
@@ -48,89 +62,54 @@ rules:
   - apiGroups: ["specs.smi-spec.io"]
     resources: ["httproutegroups", "tcproutes"]
     verbs: ["list", "get", "watch"]
+
+  # Used for interacting with cert-manager CertificateRequest resources.
+  - apiGroups: ["cert-manager.io"]
+    resources: ["certificaterequests"]
+    verbs: ["list", "get", "watch", "create", "delete"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: osm
-  namespace: cluster-baseline-settings
+  name: cluster-osm
 subjects:
   - kind: ServiceAccount
-    name: osm
+    name: cluster-osm
     namespace: cluster-baseline-settings
 roleRef:
   kind: ClusterRole
-  name: osm
+  name: cluster-osm
   apiGroup: rbac.authorization.k8s.io
 ---
 apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: osm-config
-  namespace: cluster-baseline-settings
-data:
-  permissive_traffic_policy_mode: "false"
-  egress: "false"
-  envoy_log_level: "info"
-  enable_debug_server: "false"
-  prometheus_scraping: "true"
-  tracing_enable: "false"
-  use_https_ingress: "true"
-  service_cert_validity_duration: "24h"
----
-apiVersion: admissionregistration.k8s.io/v1beta1
-kind: MutatingWebhookConfiguration
-metadata:
-  labels:
-    app: osm-controller
-  name: osm-webhook-osm
-  namespace: cluster-baseline-settings
-webhooks:
-- name: osm-inject.k8s.io
-  clientConfig:
-    service:
-      name: osm-controller
-      namespace: cluster-baseline-settings
-      path: /mutate-pod-creation
-      port: 443
-  failurePolicy: Fail
-  matchPolicy: Exact
-  namespaceSelector:
-    matchLabels:
-      openservicemesh.io/monitored-by: osm
-    matchExpressions:
-      # This label is explicitly set to ignore a namespace
-      - key: "openservicemesh.io/ignore"
-        operator: DoesNotExist
-      - key: "name"
-        operator: NotIn
-        values:
-        - cluster-baseline-settings
-        - flux-system
-        - falco-system
-        - kube-system
-        - kube-node-lease
-        - kube-public
-        - gatekeeper-system
-  rules:
-    - apiGroups:
-        - ""
-      apiVersions:
-        - v1
-      operations:
-        - CREATE
-      resources:
-        - pods
----
-apiVersion: apps/v1
-kind: Deployment
+kind: Service
 metadata:
   name: osm-controller
   namespace: cluster-baseline-settings
   labels:
     app: osm-controller
+spec:
+  ports:
+    - name: osm-port
+      port: 15128
+      targetPort: 15128
+    - name: sidecar-injector
+      port: 443
+      targetPort: 9090
+    - name: debug-port
+      port: 9092
+      targetPort: 9092
+  selector:
+    app: osm-controller
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: osm-controller
+  labels:
+    app: osm-controller
     meshName: osm
-    enforceSingleMesh: "true"
+    
 spec:
   replicas: 1
   selector:
@@ -141,7 +120,7 @@ spec:
       labels:
         app: osm-controller
     spec:
-      serviceAccountName: osm
+      serviceAccountName: cluster-osm
       nodeSelector:
         kubernetes.io/arch: amd64
         kubernetes.io/os: linux
@@ -150,10 +129,6 @@ spec:
         key: pci-scope
         operator: Equal
         value: out-of-scope
-      - effect: NoExecute
-        key: pci-scope
-        operator: Equal
-        value: in-scope
       containers:
         - name: osm-controller
           image: mcr.microsoft.com/oss/openservicemesh/osm-controller:v0.6.1
@@ -206,23 +181,45 @@ spec:
                   name: osm-acr-instance
                   key: name
 ---
-apiVersion: v1
-kind: Service
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingWebhookConfiguration
 metadata:
-  name: osm-controller
-  namespace: cluster-baseline-settings
   labels:
     app: osm-controller
-spec:
-  ports:
-    - name: osm-port
-      port: 15128
-      targetPort: 15128
-    - name: sidecar-injector
+  name: osm-webhook-osm
+webhooks:
+- name: osm-inject.k8s.io
+  clientConfig:
+    service:
+      name: osm-controller
+      namespace: cluster-baseline-settings
+      path: /mutate-pod-creation
       port: 443
-      targetPort: 9090
-    - name: debug-port
-      port: 9092
-      targetPort: 9092
-  selector:
-    app: osm-controller
+  failurePolicy: Fail
+  matchPolicy: Exact
+  namespaceSelector:
+    matchLabels:
+      openservicemesh.io/monitored-by: osm
+    matchExpressions:
+      # This label is explicitly set to ignore a namespace
+      - key: "openservicemesh.io/ignore"
+        operator: DoesNotExist
+      - key: "name"
+        operator: NotIn
+        values:
+        - cluster-baseline-settings
+        - flux-system
+        - falco-system
+        - kube-system
+        - kube-node-lease
+        - kube-public
+        - gatekeeper-system
+  rules:
+    - apiGroups:
+        - ""
+      apiVersions:
+        - v1
+      operations:
+        - CREATE
+      resources:
+        - pods
