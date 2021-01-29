@@ -156,7 +156,7 @@ spec:
         value: in-scope
       containers:
         - name: osm-controller
-          image: docker.io/openservicemesh/osm-controller:v0.6.1
+          image: mcr.microsoft.com/oss/openservicemesh/osm-controller:v0.6.1
           imagePullPolicy: IfNotPresent
           ports:
             - name: "admin-port"
@@ -168,7 +168,7 @@ spec:
             "--verbosity", "info",
             "--osm-namespace", "cluster-baseline-settings",
             "--mesh-name", "osm",
-            "--init-container-image", "$(ACR_INSTANCE).azurecr.io/openservicemesh/init:v0.6.1",
+            "--init-container-image", "mcr.microsoft.com/oss/openservicemesh/init:v0.6.1",
             "--sidecar-image", "$(ACR_INSTANCE).azurecr.io/envoyproxy/envoy-alpine:v1.15.0",
             "--webhook-config-name", "osm-webhook-osm",
             "--ca-bundle-secret-name", "osm-ca-bundle",

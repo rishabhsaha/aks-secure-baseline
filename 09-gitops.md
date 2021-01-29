@@ -34,8 +34,6 @@ Your github repo will be the source of truth for your cluster's configuration. T
    az acr import --source docker.io/falcosecurity/falco:0.26.2 -n $ACR_NAME
    az acr import --source docker.io/library/busybox:1.33.0 -n $ACR_NAME
    az acr import --source docker.io/weaveworks/kured:1.6.1 -n $ACR_NAME
-   az acr import --source docker.io/openservicemesh/osm-controller:v0.6.1 -n $ACR_NAME
-   az acr import --source docker.io/openservicemesh/init:v0.6.1 -n $ACR_NAME
    az acr import --source docker.io/envoyproxy/envoy-alpine:v1.15.0 -n $ACR_NAME
    ```
 
