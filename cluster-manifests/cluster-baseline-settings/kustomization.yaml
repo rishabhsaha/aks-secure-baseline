@@ -7,11 +7,18 @@ resources:
 - networkpolicy-denyall.yaml
 - limit-range.yaml
 - rbac.yaml
-- secrets-store-csi-driver.yaml
-- secrets-store-keyvault-provider.yaml
-- fim-standin.yaml
-- av-standin.yaml
-- kured.yaml
+- secrets-store-csi/driver.yaml
+- secrets-store-csi/keyvault-provider.yaml
+- fim/fim-standin.yaml
+- av/av-standin.yaml
+- kured/kured.yaml
+- osm/osm-crds.yaml
+- osm/osm.yaml
+secretGenerator:
+  - name: osm-acr-instance
+    type: Opaque
+    literals:
+      - name=REPLACE_ME_WITH_YOUR_ACRNAME
 images:
 - name: busybox
   newName: REPLACE_ME_WITH_YOUR_ACRNAME.azurecr.io/library/busybox

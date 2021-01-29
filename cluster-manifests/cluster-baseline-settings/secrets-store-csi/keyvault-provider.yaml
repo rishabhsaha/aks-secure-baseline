@@ -69,6 +69,15 @@ spec:
             path: /var/lib/kubelet/pods
       nodeSelector:
         kubernetes.io/os: linux
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.azure.com/mode
+                operator: NotIn
+                values:
+                - system
       tolerations:
       - effect: NoExecute
         key: pci-scope
