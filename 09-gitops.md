@@ -70,8 +70,8 @@ Your github repo will be the source of truth for your cluster's configuration. T
    4. Click **Instances**.
    5. Click the name of any of the two listed instances. E.g. **vmss-jumpboxes_0**
    6. Click **Connect** -> **Bastion** -> **Use Bastion**
-   7. Fill in the username field with `azuresu` (TODO: BUILD OUT INSTRUCTIONS FOR ADDING USERS)
-   8. Select **SSH Private Key from Local File** and select your private key file.
+   7. Fill in the username field with one of the users from your jumpBoxCloudInit.yml file. E.g. `opsuser01`.
+   8. Select **SSH Private Key from Local File** and select your private key file for that specific user.
    9. Provide your SSH passphrase in **SSH Passphrase** if your private key is protected with one.
    10. Click **Connect**
    11. For "copy on select / paste on right-click" support, your browser may request your permission to support those features. It's recommended that you _Allow_ that feature. If you don't, you'll have to use the **>>** flyout on the screen to perform copy and paste actions.

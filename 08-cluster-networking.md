@@ -1,6 +1,6 @@
 # Deploy the Cluster Spoke
 
-A lot of the foundation has been put in place. You have a [regional hub](./05-networking-hub.md) in which your cluster traffic will egress and a [jump box image for cluster management](./06-aks-jumpboximage.md) built. Now lay out the next critical component, the cluster's spoke (virtual network).
+A lot of the foundation has been put in place. You have a [regional hub](./05-networking-hub.md) in which your cluster traffic will egress and a [jump box image for cluster management](./06-aks-jumpboximage.md) built along [its user(s)](./07-aks-jumpbox-users.md). Now lay out the next critical component, the cluster's spoke (virtual network).
 
 ## Networking in this architecture
 
@@ -41,4 +41,4 @@ Your `rg-enterprise-networking-spokes` will be populated with the dedicated regi
 
 ### Next step
 
-:arrow_forward: [Deploy the AKS cluster](./08-aks-cluster.md)
+:arrow_forward: [Deploy the AKS cluster](./09-aks-cluster.md)

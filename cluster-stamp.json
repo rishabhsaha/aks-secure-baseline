@@ -100,7 +100,10 @@
         },
         "jumpBoxCloudInitAsBase64": {
             "type": "string",
-            "defaultValue": "I2Nsb3VkLWNvbmZpZwp1c2VyczoKICAtIGRlZmF1bHQKICAtIG5hbWU6IG9wc3VzZXIwMQogICAgc3VkbzogRmFsc2UKICAgIGxvY2tfcGFzc3dkOiBUcnVlCiAgICBzc2gtYXV0aG9yaXplZC1rZXlzOgogICAgICAtIHNzaC1yc2EgQUFBQUIzTnphQzF5YzJFQUFBQURBUUFCQUFBQmdRQ1pONVo1U0xNcmRQcFlnNllmY2U2TktueTErMDJYUzlkbjRBVkZqTTZzN3AwbmF6c1UyOTcrMW9meDRHRlBjVzBhT05oc3dxU1gwbWk0TDFVQVZmWEV1U25aWmJDd1pmdmpsdUl3VFZLN1c0SXVtK2ZnNjB5cmh5UVU3dEtPUVltMkpNeGw3aElpaWg2K0lTR2NzQW1xckxZaWx5RDBrL2k3ZHV6ZStuU3ZxSWJmSk9FKzRqTGtpQUs2cHRSaE9kUEN2ck50dXBJb0xVRlh6NXd2UU5vaXA0SkVSYzJWS3ZaeEcvc0M3a2hWSmhPMkpJRjRkaHlXZWtPWmhwU0NROGdiVUFVVmhzRUluN0dyWTlxdkpWcER2S29MakhZckNiSmVjOEFxeGlucDJkcnc4MHJDZXRTM3U2cFlWRkZCSFhTRUNVN1NZK040a2E4UzJ6aHJ4SWIxbVd6ZXhXVHRTZ2dtZEhYYTRaSDBZUGlxd09OcFgrVlhzMzZSeHcxc05ENjY1QStMaDB2UEdPeDJlaXJNaWN4OHdDcElCU1RyV0hEdVlyVWkvVVNSZEt3Nmo2YmI0TFYrYjFLbWY4TEFtSktKMHV2V0d1WkNBQ1F2dWM1SCtRbDNRYzkzQzcyVnFhMkF0K0tIVEhZWi9UNEMwR1JVRFZSRDNjOXVjZW5nc0tjPQogIC0gbmFtZTogb3BzdXNlcjAyCiAgICBzdWRvOiBGYWxzZQogICAgbG9ja19wYXNzd2Q6IFRydWUKICAgIHNzaC1hdXRob3JpemVkLWtleXM6CiAgICAgIC0gc3NoLXJzYSBBQUFBQjNOemFDMXljMkVBQUFBREFRQUJBQUFCZ1FDWk41WjVTTE1yZFBwWWc2WWZjZTZOS255MSswMlhTOWRuNEFWRmpNNnM3cDBuYXpzVTI5Nysxb2Z4NEdGUGNXMGFPTmhzd3FTWDBtaTRMMVVBVmZYRXVTblpaYkN3WmZ2amx1SXdUVks3VzRJdW0rZmc2MHlyaHlRVTd0S09RWW0ySk14bDdoSWlpaDYrSVNHY3NBbXFyTFlpbHlEMGsvaTdkdXplK25TdnFJYmZKT0UrNGpMa2lBSzZwdFJoT2RQQ3ZyTnR1cElvTFVGWHo1d3ZRTm9pcDRKRVJjMlZLdlp4Ry9zQzdraFZKaE8ySklGNGRoeVdla09aaHBTQ1E4Z2JVQVVWaHNFSW43R3JZOXF2SlZwRHZLb0xqSFlyQ2JKZWM4QXF4aW5wMmRydzgwckNldFMzdTZwWVZGRkJIWFNFQ1U3U1krTjRrYThTMnpocnhJYjFtV3pleFdUdFNnZ21kSFhhNFpIMFlQaXF3T05wWCtWWHMzNlJ4dzFzTkQ2NjVBK0xoMHZQR094MmVpck1pY3g4d0NwSUJTVHJXSER1WXJVaS9VU1JkS3c2ajZiYjRMVitiMUttZjhMQW1KS0owdXZXR3VaQ0FDUXZ1YzVIK1FsM1FjOTNDNzJWcWEyQXQrS0hUSFlaL1Q0QzBHUlVEVlJEM2M5dWNlbmdzS2M9CiAgLSBuYW1lOiBvcHN1c2VyMDMKICAgIHN1ZG86IEZhbHNlCiAgICBsb2NrX3Bhc3N3ZDogVHJ1ZQogICAgc3NoLWF1dGhvcml6ZWQta2V5czoKICAgICAgLSBzc2gtcnNhIEFBQUFCM056YUMxeWMyRUFBQUFEQVFBQkFBQUJnUUNaTjVaNVNMTXJkUHBZZzZZZmNlNk5LbnkxKzAyWFM5ZG40QVZGak02czdwMG5henNVMjk3KzFvZng0R0ZQY1cwYU9OaHN3cVNYMG1pNEwxVUFWZlhFdVNuWlpiQ3daZnZqbHVJd1RWSzdXNEl1bStmZzYweXJoeVFVN3RLT1FZbTJKTXhsN2hJaWloNitJU0djc0FtcXJMWWlseUQway9pN2R1emUrblN2cUliZkpPRSs0akxraUFLNnB0UmhPZFBDdnJOdHVwSW9MVUZYejV3dlFOb2lwNEpFUmMyVkt2WnhHL3NDN2toVkpoTzJKSUY0ZGh5V2VrT1pocFNDUThnYlVBVVZoc0VJbjdHclk5cXZKVnBEdktvTGpIWXJDYkplYzhBcXhpbnAyZHJ3ODByQ2V0UzN1NnBZVkZGQkhYU0VDVTdTWStONGthOFMyemhyeEliMW1XemV4V1R0U2dnbWRIWGE0WkgwWVBpcXdPTnBYK1ZYczM2Unh3MXNORDY2NUErTGgwdlBHT3gyZWlyTWljeDh3Q3BJQlNUcldIRHVZclVpL1VTUmRLdzZqNmJiNExWK2IxS21mOExBbUpLSjB1dldHdVpDQUNRdnVjNUgrUWwzUWM5M0M3MlZxYTJBdCtLSFRIWVovVDRDMEdSVURWUkQzYzl1Y2VuZ3NLYz0="
+            "minLength": 100,
+            "metadata": {
+                "description": "A cloud init file (starting with #cloud-config) as a base 64 encoded string used to perform image customization on the jump box VMs. Used for user-management in this context."
+            }
         }
     },
     "variables": {
@@ -131,6 +134,8 @@
 
         "agwName": "[concat('apw-', variables('clusterName'))]",
         "apwResourceId": "[resourceId('Microsoft.Network/applicationGateways', variables('agwName'))]",
+
+        "jumpBoxDefaultAdminUserName": "[uniqueString(variables('clusterName'), resourceGroup().id)]",
 
         "clusterControlPlaneIdentityName": "[concat('mi-', variables('clusterName'), '-controlplane')]",
 
@@ -201,14 +206,14 @@
                             "ssh": {
                                 "publicKeys": [
                                     {
-                                        "path": "/home/azuresu/.ssh/authorized_keys",
-                                        "keyData": "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAo45IddGf99tLXFxyYVWmHhh/J7EhuT1Rh0/Z9G70pmfF8/FeeHNgUeIQOEewiGOF9EiPdt66LtcW8KPmxmyMrKjAsEG5KJIHwyZ72FtFOQCqpDfDTOj/nVI3QgR7k/InQstA2C4nqfgUKlVLqpZHGpcy0AZuHS6eMIzQ9jfhYwbOan/re8KNtOwa63Egsrkf00EBQGmmkGLvzsMgCzPjP4oguWkBb7tcXfoLhph096GwaDx8dgpjUeB6ewnl0qukEGGRfWf5Qdz7RnlHbIC5gdplLyjb/78lDJaDejqFRvZ23ZeJE89AvybByDSvHzHDgiwQT0T8OsUOlcb0sp1QyQ== UNUSED"
+                                        "path": "[concat('/home/', variables('jumpBoxDefaultAdminUserName'), '/.ssh/authorized_keys')]",
+                                        "keyData": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCcFvQl2lYPcK1tMB3Tx2R9n8a7w5MJCSef14x0ePRFr9XISWfCVCNKRLM3Al/JSlIoOVKoMsdw5farEgXkPDK5F+SKLss7whg2tohnQNQwQdXit1ZjgOXkis/uft98Cv8jDWPbhwYj+VH/Aif9rx8abfjbvwVWBGeA/OnvfVvXnr1EQfdLJgMTTh+hX/FCXCqsRkQcD91MbMCxpqk8nP6jmsxJBeLrgfOxjH8RHEdSp4fF76YsRFHCi7QOwTE/6U+DpssgQ8MTWRFRat97uTfcgzKe5MOfuZHZ++5WFBgaTr1vhmSbXteGiK7dQXOk2cLxSvKkzeaiju9Jy6hoSl5oMygUVd5fNPQ94QcqTkMxZ9tQ9vPWOHwbdLRD31Ses3IBtDV+S6ehraiXf/L/e0jRUYk8IL/J543gvhOZ0hj2sQqTj9XS2hZkstZtrB2ywrJzV5ByETUU/oF9OsysyFgnaQdyduVqEPHaqXqnJvBngqqas91plyT3tSLMez3iT0s= unused-generated-by-azure"
                                     }
                                 ]
                             }
                         },
                         "customData": "[parameters('jumpBoxCloudInitAsBase64')]",
-                        "adminUsername": "azuresu"
+                        "adminUsername": "[variables('jumpBoxDefaultAdminUserName')]"
                     },
                     "extensionProfile": {
                         "extensions": []

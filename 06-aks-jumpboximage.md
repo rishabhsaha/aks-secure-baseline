@@ -43,7 +43,7 @@ We are going to be using Azure Image Builder to generate a Kubernetes-specific j
 
 1. Update the regional hub deployment to account for the requirements of the spoke.
 
-   Now that spoke network is created, the hub network's firewall needs to be updated to support the Azure Image Builder process that will land in there. The hub firewall does NOT have any default permissive egress rules, and as such, each needed egress endpoint needs to be specifically allowed.
+   Now that spoke network is created, the hub network's firewall needs to be updated to support the Azure Image Builder process that will execute in there. The hub firewall does NOT have any default permissive egress rules, and as such, each needed egress endpoint needs to be specifically allowed.
 
    ```bash
    RESOURCEID_SUBNET_AIB=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0005-00 --query properties.outputs.imageBuilderSubnetResourceId.value -o tsv)
@@ -108,4 +108,4 @@ Image building using Azure Image Builder lends itself well to having a secured, 
 
 ### Next step
 
-:arrow_forward: [Deploy the AKS cluster network spoke](./06-cluster-networking.md).
+:arrow_forward: [Configure jump box users](./07-aks-jumpbox-users.md).
