@@ -73,6 +73,20 @@ Not only do we enable them in the steps below by default, but also set up an Azu
    az deployment sub create -f subscription.json -l centralus -p enableAzureDefender=false enforceAzureDefenderAutoDeployPolicies=false
    ```
 
+## Other Azure Policies and Blueprints
+
+Consider evaluating additional Azure Policies and Azure Blueprints to help guard your subscription from undesirable resource deployments. Here are some to consider.
+
+* [PCI-DSS 3.2.1 Blueprint](https://docs.microsoft.com/azure/governance/blueprints/samples/pci-dss-3.2.1/)
+* Allowed locations
+* Allowed locations for resource groups
+* External accounts with read permissions should be removed from your subscription
+* External accounts with write permissions should be removed from your subscription
+* External accounts with owner permissions should be removed from your subscription
+* Network interfaces should not have public IPs
+
+While we'd like to apply these, and similar, in this walkthrough; we acknowledge that they might be disruptive if you are deploying this walkthrough to a shared subscription with other resources. Please take the time to review the [built-in Azure Policies](https://portal.azure.com/#blade/Microsoft_Azure_Policy/PolicyMenuBlade/Definitions) and the [ability to create your own](https://docs.microsoft.com/azure/governance/policy/tutorials/create-and-manage), and craft policies that will help keep you within regulatory compliance from an Azure Resource location & features perspective.
+
 ### Next step
 
 :arrow_forward: [Deploy the regional hub network](./04-networking-hub.md).

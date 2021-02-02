@@ -46,6 +46,10 @@ In this reference implementation, Azure Policy _and_ Azure Firewall are blocking
 
 This deployment creates an SLA-backed Azure Container Registry for your cluster's needs. Your organization may have a central container registry for you to use, or your registry may be tied specifically to your application's infrastructure (as demonstrated in this implementation). **Only use container registries that satisfy the availability and compliance needs of your workload.**
 
+## Operating System (OS) and Kubelet config
+
+The cluster above deploys the default settings for OS and Kubelet configuration that is a recommended starting point for most workloads. If your workload requires kubelet or OS/kernel changes, see [Customize node configuration](https://docs.microsoft.com/azure/aks/custom-node-configuration). Most of these settings are exposed specifically as a mechanism to tune for specific workload performance characteristics (high outbound connections, high filesystem access, large number of concurrent connections, etc.), and not as an OS hardening affordance.
+
 ### Next step
 
 :arrow_forward: [Place the cluster under GitOps management](./09-gitops.md)
