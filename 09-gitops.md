@@ -69,11 +69,11 @@ Your github repo will be the source of truth for your cluster's configuration. T
    3. Click on the Virtual Machine Scale Set resource named **vmss-jumpboxes**.
    4. Click **Instances**.
    5. Click the name of any of the two listed instances. E.g. **vmss-jumpboxes_0**
-   6. Click **Connect** -> **Bastion** -> **Use Bastion**
-   7. Fill in the username field with one of the users from your jumpBoxCloudInit.yml file. E.g. `opsuser01`.
+   6. Click **Connect** -> **Bastion** -> **Use Bastion**.
+   7. Fill in the username field with one of the users from your customized `jumpBoxCloudInit.yml` file. E.g. **opsuser01**
    8. Select **SSH Private Key from Local File** and select your private key file for that specific user.
    9. Provide your SSH passphrase in **SSH Passphrase** if your private key is protected with one.
-   10. Click **Connect**
+   10. Click **Connect**.
    11. For "copy on select / paste on right-click" support, your browser may request your permission to support those features. It's recommended that you _Allow_ that feature. If you don't, you'll have to use the **>>** flyout on the screen to perform copy and paste actions.
    12. Welcome to your jump box!
 
@@ -93,7 +93,7 @@ Your github repo will be the source of truth for your cluster's configuration. T
    az account set -s <subscription name or id>
    ```
 
-1. From your Azure Bastion connection, get your AKS credentials and set your `kubectl` context to your cluster.
+1. _From your Azure Bastion connection_, get your AKS credentials and set your `kubectl` context to your cluster.
 
    ```bash
    AKS_CLUSTER_NAME=$(az deployment group show -g rg-bu0001a0005 -n cluster-stamp --query properties.outputs.aksClusterName.value -o tsv)
@@ -101,7 +101,7 @@ Your github repo will be the source of truth for your cluster's configuration. T
    az aks get-credentials -g rg-bu0001a0005 -n $AKS_CLUSTER_NAME
    ```
 
-1. From your Azure Bastion connection, test cluster access and authenticate as a cluster admin user.
+1. _From your Azure Bastion connection_, test cluster access and authenticate as a cluster admin user.
 
    The following command will force you to authenticate into your AKS cluster's control plane. This will start yet another device login flow. For this one (**Azure Kubernetes Service AAD Client**), log in with a user that is a member of your cluster admin group in the Azure AD tenet you selected to be used for Kubernetes Cluster API RBAC. This is the user you're performing cluster management commands (e.g. `kubectl`) as.
 
@@ -122,7 +122,7 @@ Your github repo will be the source of truth for your cluster's configuration. T
    aks-npsystem-26621167-vmss000002      Ready    agent   20m   v1.19.6
    ```
 
-1. From your Azure Bastion connection, bootstrap Flux.
+1. _From your Azure Bastion connection_, bootstrap Flux.
 
    ```bash
    git clone https://github.com/[[YOUR_GITHUB_ACCOUNT_NAME]]/aks-regulated-cluster
@@ -150,9 +150,9 @@ Your github repo will be the source of truth for your cluster's configuration. T
    flux get kustomizations
    ```
 
-1. Disconnect from Azure Bastion.
+1. Disconnect from the jump box and Azure Bastion.
 
-Generally speaking, this will be the last time you should need to use direct cluster access tools like `kubectl` for day-to-day configuration operations on this cluster (outside of break-fix situations). Between ARM for Azure Resource definitions and the application of manifests via Flux, all normal configuration activities can be performed without the need to use `kubectl`. You will however see us use it for the upcoming workload deployment. This is because the SDLC component of workloads are not in scope for this reference implementation, as this is focused the infrastructure and baseline configuration.
+Generally speaking, this will be the last time you should need to use direct cluster access tools like `kubectl` for day-to-day configuration operations on this cluster (outside of live-site situations). Between ARM for Azure Resource definitions and the application of manifests via Flux, all normal configuration activities can be performed without the need to use `kubectl`. You will however see us use it for the upcoming workload deployment. This is because the SDLC component of workloads are not in scope for this reference implementation, as this is focused the infrastructure and baseline configuration.
 
 Typically of the above bootstrapping steps would be codified in a release pipeline so that there would be NO NEED to perform any steps manually. We're performing the steps manually here, like we have with all content so far for illustrative purposes of the steps required. Once you have a safe deployment practice documented (both for internal team reference and for compliance needs), you can then put those actions into an auditable deployment pipeline, that combines deploying the infrastructure with the immediate follow up bootstrapping the cluster. Your workload(s) have a distinct lifecycle from your cluster and as such are managed via another pipeline. But bootstrapping your cluster should be seen as a direct and immediate continuation of the deployment of your cluster.
 
