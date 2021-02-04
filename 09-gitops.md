@@ -12,13 +12,45 @@ While the following process likely would be handled via your deployment pipeline
 
 #### Azure Container Registry
 
-Your Azure Container Registry is available to serve more than just your workload. It can also be used to serve any cluster-wide operations tooling you wish installed on your cluster. Your GitOps operator, Flux, is one such tooling. As such, we'll have two container images imported into your private container registry that are required for the functioning of Flux. Likewise, you'll update the related yaml files to point to your specific private container registry.
+Your Azure Container Registry is available to serve more than just your cluster's workload(s). It can also be used to serve any cluster-wide operations tooling you wish installed on your cluster. Your GitOps operator, Flux, is one such tooling. As such, we'll have two container images imported into your private container registry that are required for the functioning of Flux. Likewise, you'll update the related yaml files to point to your specific private container registry. You'll also import other images that are expected to be available in the cluster bootstrapping process.
 
 #### Your Github Repo
 
 Your github repo will be the source of truth for your cluster's configuration. Typically this would be a private repo, but for ease of demonstration, it'll be connected to a public repo (all firewall permissions are set to allow this specific interaction.) You'll be updating a configuration resource for Flux so that it knows to point to your own repo.
 
 ## Steps
+
+1. Quarantine Flux and other public baseline security/utility images so you can scan them.
+
+   Quarantining first and third party images is a security best practice. This allows you to get your images onto a container registry and subject them to any sort of security/compliance scrutiny you wish to apply. Once validated, they can then be promoted to being available to your cluster. There are many variations on this pattern, with different tradeoffs for each. For simplicity in this walkthrough we are simply going to upload our images to repository names that starts with `quarantine/`. We'll then show you Azure Security Center's scan of those images, and then you'll import those same images from `quarantine/` to `live/`. We've restricted our cluster to only allow pulling from `live/` and we've built an alert if an image was imported to `live/` from a source other than `quarantine/`. To be clear, this won't block a direct import behavior or validate that the image actually passed quarantine checks. As mentioned, there are other solutions you can use for this pattern that may be more exhaustive.
+
+   ```bash
+   # Get your Quarantine Azure Container Registry service name
+   ACR_NAME_QUARANTINE=$(az deployment group show -g rg-bu0001a0005 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
+   
+   # [Combined this takes about two minutes.]
+   az acr import --source ghcr.io/fluxcd/kustomize-controller:v0.6.3 -t quarantine/fluxcd/kustomize-controller:v0.6.3 -n $ACR_NAME_QUARANTINE
+   az acr import --source ghcr.io/fluxcd/source-controller:v0.6.3 -t quarantine/fluxcd/source-controller:v0.6.3 -n $ACR_NAME_QUARANTINE
+   az acr import --source docker.io/falcosecurity/falco:0.26.2 -t quarantine/falcosecurity/falco:0.26.2 -n $ACR_NAME_QUARANTINE
+   az acr import --source docker.io/library/busybox:1.33.0 -t quarantine/library/busybox:1.33.0 -n $ACR_NAME_QUARANTINE
+   az acr import --source docker.io/weaveworks/kured:1.6.1 -t quarantine/weaveworks/kured:1.6.1 -n $ACR_NAME_QUARANTINE
+   az acr import --source docker.io/envoyproxy/envoy-alpine:v1.15.0 -t quarantine/envoyproxy/envoy-alpine:v1.15.0 -n $ACR_NAME_QUARANTINE
+
+1. Run security audits on images.
+
+   If you had sufficient permissions when we did subscription configuration, Azure Defender for container registries is enabled on your subscription. Azure Defender for container registries will begin scanning all newly imported images in your Azure Container Registry using a Microsoft hosted version of Qualys. The results of those scans will start to be available in Azure Security Center within 15 minutes of import.
+
+   To see the scan results in Azure Security Center, perform the following actions:
+
+   1. Open the [Azure Security Center's **Recommendations** page](https://portal.azure.com/#blade/Microsoft_Azure_Security/SecurityMenuBlade/5).
+   1. Under **Controls** expand **Remediate vulnerabilities**.
+   1. Click on **Vulnerabilities in Azure Container Registry images should be remediated (powered by Qualys)**.
+   1. Expand **Affected resources**.
+   1. Click on your ACR instance.
+
+   In here, you can see which container images are unhealthy (had a scan detection), healthy (was scanned, but didn't result in any alerts), and unverified (was unable to be scanned). Unfortunately, Azure Defender for container registries is unable to scan all container types. Also, because your container registry is private, you won't get a list of those "unverified" images here.
+
+   There is no action for you to take, in this walkthrough. This was just a demonstration of Azure Security Center's scanning features. Ultimately, you'll want to build a quarantine pipeline that solves for your needs and aligns with your image deployment strategy.
 
 1. Import Flux and other baseline security/utility images into your container registry.
 
@@ -74,7 +106,7 @@ Your github repo will be the source of truth for your cluster's configuration. T
    8. Select **SSH Private Key from Local File** and select your private key file for that specific user.
    9. Provide your SSH passphrase in **SSH Passphrase** if your private key is protected with one.
    10. Click **Connect**.
-   11. For "copy on select / paste on right-click" support, your browser may request your permission to support those features. It's recommended that you _Allow_ that feature. If you don't, you'll have to use the **>>** flyout on the screen to perform copy and paste actions.
+   11. For enhanced "copy-on-select" & "paste-on-right-click" support, your browser may request your permission to support those features. It's recommended that you _Allow_ that feature. If you don't, you'll have to use the **>>** flyout on the screen to perform copy & paste actions.
    12. Welcome to your jump box!
 
 1. From your Azure Bastion connection, log into your Azure RBAC tenant and select your subscription.
@@ -128,23 +160,18 @@ Your github repo will be the source of truth for your cluster's configuration. T
    git clone https://github.com/[[YOUR_GITHUB_ACCOUNT_NAME]]/aks-regulated-cluster
    cd aks-regulated-cluster
 
+   # Apply the Flux CRDs before applying the rest of flux (to avoid a race condition in the sync settings)
+   kubectl apply -f cluster-manifests/flux-system/gotk-crds.yaml
    kubectl apply -k cluster-manifests/flux-system
    ```
 
-   If this process fails with an error similar to
-
-   ```output
-   unable to recognize ".": no matches for kind "Kustomization" in version "kustomize.toolkit.fluxcd.io/v1beta1"
-   unable to recognize ".": no matches for kind "GitRepository" in version "source.toolkit.fluxcd.io/v1beta1"
-   ```
-
-   Then execute the same command again.  **TODO: There is a resource race condition that I'd like to solve before we go live here.**
+   Validate that flux has been bootstrapped.
 
    ```bash
    kubectl wait --namespace flux-system --for=condition=available deployment/source-controller --timeout=90s
 
-   # If you have flux installed you can also inspect using the following commands
-   # (The default jumpbox image created with this walkthrough has the flux cli installed.)
+   # If you have flux cli installed you can also inspect using the following commands
+   # (The default jump box image created with this walkthrough has the flux cli installed.)
    flux check --components source-controller,kustomize-controller
    flux get sources git
    flux get kustomizations
@@ -192,6 +219,14 @@ Your dependency on or choice of in-cluster tooling to achieve your compliance ne
 This reference implementation also installs a simplistic deployment of [Falco](https://falco.org/). It is not configured for alerts, nor tuned to any specific needs. It uses the default rules as they were defined when its manifests were generated. This is also being installed for illustrative purposes, and you're encouraged to evaluate if a solution like Falco is relevant to you. If so, in your final implementation, review and tune its deployment to fit your needs (E.g. add custom rules like [CVE detection](https://artifacthub.io/packages/search?ts_query_web=cve&org=falco), [sudo usage](https://artifacthub.io/packages/falco/security-hub/admin-activities), [basic FIM](https://artifacthub.io/packages/falco/security-hub/file-integrity-monitoring), [SSH Connection monitoring](https://artifacthub.io/packages/falco/security-hub/ssh-connections), and [Traefik containment](https://artifacthub.io/packages/falco/security-hub/traefik)). This tooling, as most security tooling will be, is highly-privileged within your cluster. Usually running a DaemonSets with access to the underlying node in a manor that is well beyond any typical workload in your cluster.
 
 You should ensure all necessary tooling and related reporting/alerting is applied as part of your initial bootstrapping process to ensure coverage _immediately_ after cluster creation.
+
+## Container registry quarantine pattern
+
+While Azure Defender for container registries is a natural fit for scanning images in Azure Container Registry, it unfortunately cannot be used in conjunction with an ACR that is network restricted with Private Link, such as the one in this walkthrough. This ACR instance is exclusively exposed for your cluster, and no other access.
+
+It's a common desire to want to implement a container registry quarantine pattern; where you first push to a staging container registry that is exposed to your tooling of choice, such as Qualys (stand alone or as part of Azure Defender for container registries). The images undergo any scanning desired, and once past that gate is then imported into the final production registry. Azure Container Registry currently does not have this pattern implemented for General Availability in a single-ACR instance topology; so the pattern is often implemented using a series of registries as part of your deployment process.
+
+The quarantine pattern is ideal for detecting issues with new images, but continuous scanning is also desirable as CVEs can be found at any time for your images that are in use. Azure Defender for container registries can perform continuous scanning, but only for recently pull images. This walkthrough does not implement this pattern, but it is strongly recommended that you find a suitable workflow that allows your images (your own first party and third party) to pass through a security scanning gate, and also an ongoing periodic scanning process. You could perform this in the cluster with a security agent (usually via an Admission Controller shipped with the agent) or external to the cluster in your container registry, or both.
 
 ### Next step
 

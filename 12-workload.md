@@ -36,6 +36,10 @@ The cluster now has an [Traefik configured with a TLS certificate](./08-secret-m
    kubectl -n a0008 run -i --rm --tty curl --image=mcr.microsoft.com/powershell --limits=cpu=200m,memory=128M -- curl -kI https://bu0001a0008-00.aks-ingress.contoso.com -w '%{remote_ip}\n'
    ```
 
+## Security tooling
+
+Your compliant cluster architecture requires a compliant inner loop development practice as well. Since this walkthrough is not focused on inner loop development practices, please dedicate some time to documenting your safe deployment practices and your workload's supply chain and hardening techniques. Consider using solutions like [GitHub Action's container-scan](https://github.com/Azure/container-scan) to check for container-level hardening concerns -- CIS benchmark alignment, CVE detections, etc. even before the image is pushed to your container registry.
+
 ### Next step
 
 :arrow_forward: [End-to-End Validation](./10-validation.md)

@@ -1035,6 +1035,42 @@
                 }*/
             ]
         },
+        {
+            "type": "Microsoft.Insights/scheduledQueryRules",
+            "apiVersion": "2018-04-16",
+            "name": "Image Imported into ACR from source other than approved Quarantine",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]",
+                "[resourceId('Microsoft.ContainerRegistry/registries', variables('defaultAcrName'))]"
+            ],
+            "properties": {
+                "description": "The only images we want in live/ are those that came from this ACR instance, but from the quarantine/ repository.",
+                "enabled": "true",
+                "source": {
+                    "query": "ContainerRegistryRepositoryEvents \r\n| where OperationName == \"importImage\" and Repository startswith \"live/\"\r\n| where MediaType !startswith strcat(_ResourceId, \"/quarantine\")\r\n\r\n| where TimeGenerated >= ago(15m)\r\n| summarize AggregatedValue = count() by bin(TimeGenerated, 15m)",
+                    "dataSourceId": "[resourceId('Microsoft.ContainerRegistry/registries', variables('defaultAcrName'))]",
+                    "queryType": "Number"
+                },
+                "schedule": {
+                    "frequencyInMinutes": 10,
+                    "timeWindowInMinutes": 10
+                },
+                "action": {
+                    "severity": "3",
+                    "trigger": {
+                        "thresholdOperator": "GreaterThan",
+                        "threshold": 0,
+                        "metricTrigger": {
+                            "thresholdOperator": "GreaterThan",
+                            "threshold": 0,
+                            "metricTriggerType": "Total"
+                        }
+                    },
+                    "odata.type": "Microsoft.WindowsAzure.Management.Monitoring.Alerts.Models.Microsoft.AppInsights.Nexus.DataContracts.Resources.ScheduledQueryRules.AlertingAction"
+                }
+            }
+        },
         /*  This one have been 404ing on deploying ... just commenting out for now. {
             "name": "PodFailedScheduledQuery",
             "type": "Microsoft.Insights/scheduledQueryRules",
