@@ -11,7 +11,7 @@ After you are done exploring your deployed [AKS secure baseline cluster](./), yo
    :warning: Ensure you are using the correct subscription, and validate that the only resources that exist in these groups are ones you're okay deleting.
 
    ```bash
-   az group delete -n rg-bu0001a0008
+   az group delete -n rg-bu0001a0005
    az group delete -n rg-enterprise-networking-spokes
    az group delete -n rg-enterprise-networking-hubs
    ```
@@ -21,7 +21,7 @@ After you are done exploring your deployed [AKS secure baseline cluster](./), yo
    > Because this reference implementation enables soft delete on Key Vault, execute a purge so your next deployment of this implementation doesn't run into a naming conflict.
 
    ```bash
-   az keyvault purge --name ${KEYVAULT_NAME} --location eastus2
+   az keyvault purge -n ${KEYVAULT_NAME}
    ```
 
 1. If any temporary changes were made to Azure AD or Azure RBAC permissions consider removing those as well.

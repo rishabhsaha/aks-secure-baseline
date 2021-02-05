@@ -144,7 +144,7 @@ spec:
             "--osm-namespace", "cluster-baseline-settings",
             "--mesh-name", "osm",
             "--init-container-image", "mcr.microsoft.com/oss/openservicemesh/init:v0.6.1",
-            "--sidecar-image", "$(ACR_INSTANCE).azurecr.io/envoyproxy/envoy-alpine:v1.15.0",
+            "--sidecar-image", "$(ACR_INSTANCE).azurecr.io/live/envoyproxy/envoy-alpine:v1.15.0",
             "--webhook-config-name", "osm-webhook-osm",
             "--ca-bundle-secret-name", "osm-ca-bundle",
             "--certificate-manager", "tresor"

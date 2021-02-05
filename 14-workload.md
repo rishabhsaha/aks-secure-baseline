@@ -1,6 +1,6 @@
 # Deploy the Workload (ASP.NET Core Docker web app)
 
-The cluster now has an [Traefik configured with a TLS certificate](./08-secret-managment-and-ingress-controller.md). The last step in the process is to deploy the workload, which will demonstrate the system's functions.
+The cluster now has an [Traefik configured with a TLS certificate](./13-secret-managment-and-ingress-controller.md). The last step in the process is to deploy the workload, which will demonstrate the system's functions.
 
 ## Steps
 
@@ -42,4 +42,4 @@ Your compliant cluster architecture requires a compliant inner loop development 
 
 ### Next step
 
-:arrow_forward: [End-to-End Validation](./10-validation.md)
+:arrow_forward: [End-to-End Validation](./15-validation.md)

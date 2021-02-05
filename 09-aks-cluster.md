@@ -52,4 +52,4 @@ The cluster above deploys the default settings for OS and Kubelet configuration 
 
 ### Next step
 
-:arrow_forward: [Place the cluster under GitOps management](./09-gitops.md)
+:arrow_forward: [Prepare to bootstrap the cluster](./10-registry-quarantine.md)
