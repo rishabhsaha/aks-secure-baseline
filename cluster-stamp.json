@@ -2416,7 +2416,7 @@
                 "policyDefinitionId": "[variables('policyResourceIdEnforceImageSource')]",
                 "parameters": {
                     "allowedContainerImagesRegex": {
-                        "value": "[concat(variables('defaultAcrName'),'.azurecr.io/.+$|mcr.microsoft.com/.+$')]"
+                        "value": "[concat(variables('defaultAcrName'),'.azurecr.io/live/.+$|mcr.microsoft.com/.+$')]"
                     },
                     "excludedNamespaces": {
                         "value": [
