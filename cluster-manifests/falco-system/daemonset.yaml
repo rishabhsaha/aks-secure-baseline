@@ -7,7 +7,7 @@ metadata:
   namespace: falco-system
   labels:
     app: aks-falco
-    chart: "falco-1.6.0"
+    chart: "falco-1.7.3"
     release: "aks"
     heritage: "Helm"
 spec:
@@ -22,12 +22,14 @@ spec:
         app: aks-falco
         role: security
       annotations:
-        checksum/config: 0f4f9011acf9d14d8414db781ce5dec6dce63559d52f7ad61df904c52b764a69
+        checksum/config: c8d2718dd632fb0254f5f202c1063b5bbeb21382d762acbe2390da1ea1267b48
         checksum/rules: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
         checksum/certs: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
     spec:
       serviceAccountName: aks-falco
       tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/master
         - effect: NoExecute
           key: pci-scope
           operator: Equal
@@ -38,7 +40,7 @@ spec:
           value: out-of-scope
       containers:
         - name: falco
-          image: falcosecurity/falco:0.26.2
+          image: docker.io/falcosecurity/falco:0.27.0
           imagePullPolicy: IfNotPresent
           resources:
             limits:

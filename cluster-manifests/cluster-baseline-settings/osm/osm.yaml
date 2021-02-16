@@ -51,7 +51,7 @@ rules:
     resources: ["secrets", "configmaps"]
     verbs: ["create", "update"]
   - apiGroups: ["admissionregistration.k8s.io"]
-    resources: ["mutatingwebhookconfigurations"]
+    resources: ["mutatingwebhookconfigurations", "validatingwebhookconfigurations"]
     verbs: ["get", "list", "watch", "create", "update", "patch"]
   - apiGroups: ["split.smi-spec.io"]
     resources: ["trafficsplits"]
@@ -94,7 +94,7 @@ spec:
       port: 15128
       targetPort: 15128
     - name: sidecar-injector
-      port: 443
+      port: 9090
       targetPort: 9090
     - name: debug-port
       port: 9092
@@ -109,7 +109,6 @@ metadata:
   labels:
     app: osm-controller
     meshName: osm
-    
 spec:
   replicas: 1
   selector:
@@ -119,6 +118,9 @@ spec:
     metadata:
       labels:
         app: osm-controller
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '9091'
     spec:
       serviceAccountName: cluster-osm
       nodeSelector:
@@ -131,20 +133,22 @@ spec:
         value: out-of-scope
       containers:
         - name: osm-controller
-          image: mcr.microsoft.com/oss/openservicemesh/osm-controller:v0.6.1
+          image: mcr.microsoft.com/oss/openservicemesh/osm-controller:v0.7.0
           imagePullPolicy: IfNotPresent
           ports:
             - name: "admin-port"
               containerPort: 15000
             - name: "osm-port"
               containerPort: 15128
+            - name: "metrics"
+              containerPort: 9091
           command: ['/osm-controller']
           args: [
             "--verbosity", "info",
             "--osm-namespace", "cluster-baseline-settings",
             "--mesh-name", "osm",
-            "--init-container-image", "mcr.microsoft.com/oss/openservicemesh/init:v0.6.1",
-            "--sidecar-image", "$(ACR_INSTANCE).azurecr.io/live/envoyproxy/envoy-alpine:v1.15.0",
+            "--init-container-image", "mcr.microsoft.com/oss/openservicemesh/init:v0.7.0",
+            "--sidecar-image", "$(ACR_INSTANCE).azurecr.io/live/envoyproxy/envoy-alpine:v1.17.0",
             "--webhook-config-name", "osm-webhook-osm",
             "--ca-bundle-secret-name", "osm-ca-bundle",
             "--certificate-manager", "tresor"
@@ -194,7 +198,7 @@ webhooks:
       name: osm-controller
       namespace: cluster-baseline-settings
       path: /mutate-pod-creation
-      port: 443
+      port: 9090
   failurePolicy: Fail
   matchPolicy: Exact
   namespaceSelector:

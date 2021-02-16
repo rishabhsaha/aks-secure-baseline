@@ -28,7 +28,7 @@ Your `rg-enterprise-networking-spokes` will be populated with the dedicated regi
 
 1. Update the regional hub deployment to account for the runtime requirements of the virtual network.
 
-   This is an evolution of same hub template you used before, but now updated with Azure Firewall rules specific to this AKS Cluster infrastructure.
+   This is an evolution of same hub template you used before, but now updated with Azure Firewall rules specific to this AKS Cluster infrastructure. To see what's changed, [run a diff between the two](https://codepen.io/ckittel/pen/XWNRbOq) versions. [TODO: Provide functioning link!]
 
    ```bash
    RESOURCEID_SUBNET_AIB=$(az deployment group show -g rg-enterprise-networking-spokes -n spoke-BU0001A0005-00 --query properties.outputs.imageBuilderSubnetResourceId.value -o tsv)

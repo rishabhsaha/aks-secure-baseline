@@ -965,7 +965,7 @@
                 "sku": {
                     "name": "PerGB2018"
                 },
-                "retentionInDays": 30,
+                "retentionInDays": 90,
                 "publicNetworkAccessForIngestion": "Enabled", // TODO: Consider private link here (for those logs that can support it)
                 "publicNetworkAccessForQuery": "Enabled"
             },
@@ -1037,7 +1037,7 @@
         },
         {
             "type": "Microsoft.Insights/scheduledQueryRules",
-            "apiVersion": "2018-04-16",
+            "apiVersion": "2020-05-01-preview",
             "name": "Image Imported into ACR from source other than approved Quarantine",
             "location": "[parameters('location')]",
             "dependsOn": [
@@ -1045,30 +1045,33 @@
                 "[resourceId('Microsoft.ContainerRegistry/registries', variables('defaultAcrName'))]"
             ],
             "properties": {
-                "description": "The only images we want in live/ are those that came from this ACR instance, but from the quarantine/ repository.",
-                "enabled": "true",
-                "source": {
-                    "query": "ContainerRegistryRepositoryEvents \r\n| where OperationName == \"importImage\" and Repository startswith \"live/\"\r\n| where MediaType !startswith strcat(_ResourceId, \"/quarantine\")\r\n\r\n| where TimeGenerated >= ago(15m)\r\n| summarize AggregatedValue = count() by bin(TimeGenerated, 15m)",
-                    "dataSourceId": "[resourceId('Microsoft.ContainerRegistry/registries', variables('defaultAcrName'))]",
-                    "queryType": "Number"
-                },
-                "schedule": {
-                    "frequencyInMinutes": 10,
-                    "timeWindowInMinutes": 10
-                },
-                "action": {
-                    "severity": "3",
-                    "trigger": {
-                        "thresholdOperator": "GreaterThan",
-                        "threshold": 0,
-                        "metricTrigger": {
-                            "thresholdOperator": "GreaterThan",
+                "description":"The only images we want in live/ are those that came from this ACR instance, but from the quarantine/ repository.",
+                "actions": [],
+                "criteria": {
+                    "allOf": [
+                        {
+                            "operator": "GreaterThan",
+                            "query": "ContainerRegistryRepositoryEvents\r\n| where OperationName == \"importImage\" and Repository startswith \"live/\" and MediaType !startswith strcat(_ResourceId, \"/quarantine\")",
                             "threshold": 0,
-                            "metricTriggerType": "Total"
+                            "timeAggregation": "Count",
+                            "dimensions": [],
+                            "failingPeriods": {
+                                "minFailingPeriodsToAlert": 1,
+                                "numberOfEvaluationPeriods": 1
+                            },
+                            "resourceIdColumn": ""
                         }
-                    },
-                    "odata.type": "Microsoft.WindowsAzure.Management.Monitoring.Alerts.Models.Microsoft.AppInsights.Nexus.DataContracts.Resources.ScheduledQueryRules.AlertingAction"
-                }
+                    ]
+                },
+                "enabled": true,
+                "evaluationFrequency": "PT10M",
+                "scopes": [
+                    "[resourceId('Microsoft.ContainerRegistry/registries', variables('defaultAcrName'))]"
+                ],
+                "severity": 3,
+                "windowSize": "PT10M",
+                "muteActionsDuration": null,
+                "overrideQueryTimeRange": null
             }
         },
         /*  This one have been 404ing on deploying ... just commenting out for now. {
@@ -1158,7 +1161,7 @@
             "apiVersion": "2015-11-01-preview",
             "name": "[variables('securityCenterSolutionName')]",
             "location": "[parameters('location')]",
-            "comments": "Enables Azure Security Center on this workspace.",
+            "comments": "Enables Azure Sentinal on this workspace.",
             "dependsOn": [
                 "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]"
             ],

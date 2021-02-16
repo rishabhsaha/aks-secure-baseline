@@ -386,7 +386,8 @@
                                             "Microsoft.Network/virtualNetworks",
                                             "Microsoft.Network/virtualNetworks/subnets",
                                             "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
-                                            "Microsoft.OperationalInsights/workspaces"
+                                            "Microsoft.OperationalInsights/workspaces",
+                                            "Microsoft.OperationsManagement/solutions"
                                         ]
                                     }
                                 }

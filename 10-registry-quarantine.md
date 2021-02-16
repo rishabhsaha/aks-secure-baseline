@@ -6,7 +6,7 @@ Now that [the AKS cluster](./09-aks-cluster.md) has been deployed, the next step
 
 Your cluster is about to be bootstrapped with some base operating container images. These components will place your cluster under GitOps control and will be foundational security elements and any other cluster-wide resources you want deployed before workloads start landing on the cluster. This means this is the first time we'll be bringing images directly into this cluster.
 
-You'll end up with the following images imported into your ACR instance, after having passed through a (partly) simulated quarantine process.
+You'll end up with the following images imported into your ACR instance, after having passed through a simulated quarantine process.
 
 * Flux (kustomize-controller, source-controller)
 * Flaco
@@ -40,16 +40,17 @@ Using a security agent that is container-aware and can operate from within the c
 
    ```bash
    # Get your Quarantine Azure Container Registry service name
-   # You only deploy one ACR instance, but this could be a separate, dedicated quarantine instance if desired.
+   # You only deployed one ACR instance in this walkthrough, but this could be
+   # a separate, dedicated quarantine instance managed by your IT team.
    ACR_NAME_QUARANTINE=$(az deployment group show -g rg-bu0001a0005 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
    
    # [Combined this takes about two minutes.]
-   az acr import --source ghcr.io/fluxcd/kustomize-controller:v0.6.3 -t quarantine/fluxcd/kustomize-controller:v0.6.3 -n $ACR_NAME_QUARANTINE
-   az acr import --source ghcr.io/fluxcd/source-controller:v0.6.3 -t quarantine/fluxcd/source-controller:v0.6.3 -n $ACR_NAME_QUARANTINE
-   az acr import --source docker.io/falcosecurity/falco:0.26.2 -t quarantine/falcosecurity/falco:0.26.2 -n $ACR_NAME_QUARANTINE
+   az acr import --source ghcr.io/fluxcd/kustomize-controller:v0.8.0 -t quarantine/fluxcd/kustomize-controller:v0.8.0 -n $ACR_NAME_QUARANTINE
+   az acr import --source ghcr.io/fluxcd/source-controller:v0.8.0 -t quarantine/fluxcd/source-controller:v0.8.0 -n $ACR_NAME_QUARANTINE
+   az acr import --source docker.io/falcosecurity/falco:0.27.0 -t quarantine/falcosecurity/falco:0.27.0 -n $ACR_NAME_QUARANTINE
    az acr import --source docker.io/library/busybox:1.33.0 -t quarantine/library/busybox:1.33.0 -n $ACR_NAME_QUARANTINE
    az acr import --source docker.io/weaveworks/kured:1.6.1 -t quarantine/weaveworks/kured:1.6.1 -n $ACR_NAME_QUARANTINE
-   az acr import --source docker.io/envoyproxy/envoy-alpine:v1.15.0 -t quarantine/envoyproxy/envoy-alpine:v1.15.0 -n $ACR_NAME_QUARANTINE
+   az acr import --source docker.io/envoyproxy/envoy-alpine:v1.17.0 -t quarantine/envoyproxy/envoy-alpine:v1.17.0 -n $ACR_NAME_QUARANTINE
    ```
 
    > For simplicity we are NOT importing images that are coming from Microsoft Container Registry (MCR). This is not an endorsement of the suitability of those images to be pulled without going through quarantine or depending public container registries for production runtime needs. All container images that you bring to the cluster should pass through this quarantine step. For transparency, images that we skipped importing are for [Open Service Mesh](./cluster-manifests/cluster-baseline-settings/osm/) and [CSI Secret Store](./cluster-manifests/cluster-baseline-settings/secrets-store-csi/). Both of these are [progressing to eventually be AKS add-ons in the cluster](https://aka.ms/aks/roadmap), and as such would have been pre-deployed to your cluster like other add-ons (E.g. Azure Policy and Azure Monitor) so you wouldn't need to bootstrap the cluster with them yourself. We recommend you do bring these into this import process, and once you've done that you can update the Azure Policy `allowedContainerImagesRegex` to remove `mcr.microsoft.com/.+` as a valid source of images, leaving just `<your acr instance>/live/.+` as the only valid source.
@@ -79,15 +80,15 @@ Using a security agent that is container-aware and can operate from within the c
    ACR_NAME=$(az deployment group show -g rg-bu0001a0005 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
    
    # [Combined this takes about two minutes.]
-   az acr import --source quarantine/fluxcd/kustomize-controller:v0.6.3 -r $ACR_NAME_QUARANTINE -t live/fluxcd/kustomize-controller:v0.6.3 -n $ACR_NAME
-   az acr import --source quarantine/fluxcd/source-controller:v0.6.3 -r $ACR_NAME_QUARANTINE -t live/fluxcd/source-controller:v0.6.3 -n $ACR_NAME
-   az acr import --source quarantine/falcosecurity/falco:0.26.2 -r $ACR_NAME_QUARANTINE -t live/falcosecurity/falco:0.26.2 -n $ACR_NAME
+   az acr import --source quarantine/fluxcd/kustomize-controller:v0.8.0 -r $ACR_NAME_QUARANTINE -t live/fluxcd/kustomize-controller:v0.8.0 -n $ACR_NAME
+   az acr import --source quarantine/fluxcd/source-controller:v0.8.0 -r $ACR_NAME_QUARANTINE -t live/fluxcd/source-controller:v0.8.0 -n $ACR_NAME
+   az acr import --source quarantine/falcosecurity/falco:0.27.0 -r $ACR_NAME_QUARANTINE -t live/falcosecurity/falco:0.27.0 -n $ACR_NAME
    az acr import --source quarantine/library/busybox:1.33.0 -r $ACR_NAME_QUARANTINE -t live/library/busybox:1.33.0 -n $ACR_NAME
    az acr import --source quarantine/weaveworks/kured:1.6.1 -r $ACR_NAME_QUARANTINE -t live/weaveworks/kured:1.6.1 -n $ACR_NAME
-   az acr import --source quarantine/envoyproxy/envoy-alpine:v1.15.0 -r $ACR_NAME_QUARANTINE -t live/envoyproxy/envoy-alpine:v1.15.0 -n $ACR_NAME
+   az acr import --source quarantine/envoyproxy/envoy-alpine:v1.17.0 -r $ACR_NAME_QUARANTINE -t live/envoyproxy/envoy-alpine:v1.17.0 -n $ACR_NAME
    ```
 
-   > You've deployed an alert that will fire if you import an image directly to `live/` without coming from `quarantine/`. If you'd like to see that trigger, go ahead and import some other image directly to `live/`. Within ten minutes, you should see [a related alert in the Azure Portal](https://portal.azure.com/#blade/Microsoft_Azure_Monitoring/AlertsManagementSummaryBlade).
+   > You've deployed an alert called **Image Imported into ACR from source other than approved Quarantine** that will fire if you import an image directly to `live/` without coming from `quarantine/`. If you'd like to see that trigger, go ahead and import some other image directly to `live/`. Within ten minutes, you should see [this alert trigger in the Azure Portal](https://portal.azure.com/#blade/Microsoft_Azure_Monitoring/AlertsManagementSummaryBlade).
 
 ### Next step
 

@@ -43,9 +43,9 @@ Also, depending on your workload subscription scope, some of the policies applie
 
 As mentioned in the Azure Policy section above, we enable the following Azure Security Center's services.
 
-* [Azure Defender for Kubernetes](https://docs.microsoft.com/azure/security-center/defender-for-kubernetes-introduction)
-* [Azure Defender for Container Registries](https://docs.microsoft.com/azure/security-center/defender-for-container-registries-introduction)
-* [Azure Defender for Key Vault](https://docs.microsoft.com/azure/security-center/defender-for-key-vault-introduction)
+* [Azure Defender for kubernetes](https://docs.microsoft.com/azure/security-center/defender-for-kubernetes-introduction)
+* [Azure Defender for container registries](https://docs.microsoft.com/azure/security-center/defender-for-container-registries-introduction)
+* [Azure Defender for key vault](https://docs.microsoft.com/azure/security-center/defender-for-key-vault-introduction)
 
 Not only do we enable them in the steps below by default, but also set up an Azure Policy that ensures they stay enabled.
 
@@ -66,7 +66,7 @@ Not only do we enable them in the steps below by default, but also set up an Azu
    az deployment sub create -f subscription.json -l centralus
    ```
 
-   If you do not have permissions on your subscription to enable Azure Defender (which requires the Azure RBAC role of _Subscription Owner_ or _Security Admin_), then instead execute the following variation of the same command. This will not enable Azure Defender services nor will Azure Policy attempt to enable the same (the policy will still be created, but in audit-only mode). Your final deployment should be to a subscription with these security services activated.
+   If you do not have permissions on your subscription to enable Azure Defender (which requires the Azure RBAC role of _Subscription Owner_ or _Security Admin_), then instead execute the following variation of the same command. This will not enable Azure Defender services nor will Azure Policy attempt to enable the same (the policy will still be created, but in audit-only mode). Your final implementation should be to a subscription with these security services activated.
 
    ```bash
    # [This may take up to five minutes to run.]
