@@ -12,8 +12,36 @@ Following the steps below will result in the provisioning of the shared Azure re
 | Azure Private Dns Zone                | The Private Dns Zone for the Azure Container Registry. Later cluster can link their vNets to it        |
 | Azure Log Analytics Workspace         | A Centralized Log Analytics workspace where all the logs are collected                                 |
 
+Azure Front Door is a global service shared by all the deployed clusters. Azure Front Door always routes traffic to the fastest and available (healthy) backend. The Azure Application Gateway of each AKS Cluster will be each Azure Front Door backend.
+We will reach two goals:
+
+1. your traffic to your closest service backend
+1. if some app fails, then the others instances works as backup.
+
 ## Steps
 
+1. Create resource group in order to deploy Shared services
+
+   ```bash
+   az group create --name rg-bu0001a0042-shared-services --location centralus
+   ```
+
+1. Read the FQDN values will have each Azure Application Gateway, the public ip DNS name already deployed
+
+   ```bash
+   APPGW_FQDN_BU0001A0042_03=$(az deployment group show --resource-group rg-enterprise-networking-spokes -n spoke-BU0001A0042-03 --query properties.outputs.appGwFqdn.value -o tsv)
+   APPGW_FQDN_BU0001A0042_04=$(az deployment group show --resource-group rg-enterprise-networking-spokes -n spoke-BU0001A0042-04 --query properties.outputs.appGwFqdn.value -o tsv)
+   ```
+
+1. Deploy Azure Front Door
+
+   > :book: Each client of our application around the world will be served for the closet AKS Cluster, and in case of some failure in one of the instance, the user will be served for another.
+
+   ```bash
+   az deployment group create -g g-bu0001a0042-shared-services -f frontdoor-stamp.json -p backendNames="['${APPGW_FQDN_BU0001A0042_03}','${APPGW_FQDN_BU0001A0042_04}']"
+   ```
+
+1. Lorem Ipsum
 1. Create the shared services resource group for your AKS clusters.
 
    > :book: The app team working on behalf of business unit 0001 (BU001) is aboyt to deploy a new app (Application Id: 0042). This application needs to be deployed in a multiregion cluster infrastructure. But first the app team is required to assess the services that could be shared across the multiple clusters they are planning to create. To do this they are looking at global or regional but geo replicated services that are not cluster but worklod specific.
