@@ -88,7 +88,7 @@
             }
         },
         "kubernetesVersion": {
-            "defaultValue": "1.19.6",
+            "defaultValue": "1.20.2",
             "type": "string"
         },
         "jumpBoxImageResourceId": {
@@ -1074,41 +1074,46 @@
                 "overrideQueryTimeRange": null
             }
         },
-        /*  This one have been 404ing on deploying ... just commenting out for now. {
-            "name": "PodFailedScheduledQuery",
+        {
             "type": "Microsoft.Insights/scheduledQueryRules",
-            "apiVersion": "2018-04-16",
+            "apiVersion": "2020-05-01-preview",
+            "name": "PodFailedScheduledQuery",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.OperationsManagement/solutions',variables('containerInsightsSolutionName'))]"
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]",
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
             ],
             "properties": {
-                "description": "Alert on pod Failed phase.",
-                "enabled": "true",
-                "source": {
-                    "query": "[concat('//https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-alerts \r\n let endDateTime = now(); let startDateTime = ago(1h); let trendBinSize = 1m; let clusterName = \"',variables('clusterName'),'\"; KubePodInventory | where TimeGenerated < endDateTime | where TimeGenerated >= startDateTime | where ClusterName == clusterName | distinct ClusterName, TimeGenerated | summarize ClusterSnapshotCount = count() by bin(TimeGenerated, trendBinSize), ClusterName | join hint.strategy=broadcast ( KubePodInventory | where TimeGenerated < endDateTime | where TimeGenerated >= startDateTime | distinct ClusterName, Computer, PodUid, TimeGenerated, PodStatus | summarize TotalCount = count(), PendingCount = sumif(1, PodStatus =~ \"Pending\"), RunningCount = sumif(1, PodStatus =~ \"Running\"), SucceededCount = sumif(1, PodStatus =~ \"Succeeded\"), FailedCount = sumif(1, PodStatus =~ \"Failed\") by ClusterName, bin(TimeGenerated, trendBinSize) ) on ClusterName, TimeGenerated | extend UnknownCount = TotalCount - PendingCount - RunningCount - SucceededCount - FailedCount | project TimeGenerated, TotalCount = todouble(TotalCount) / ClusterSnapshotCount, PendingCount = todouble(PendingCount) / ClusterSnapshotCount, RunningCount = todouble(RunningCount) / ClusterSnapshotCount, SucceededCount = todouble(SucceededCount) / ClusterSnapshotCount, FailedCount = todouble(FailedCount) / ClusterSnapshotCount, UnknownCount = todouble(UnknownCount) / ClusterSnapshotCount| summarize AggregatedValue = avg(FailedCount) by bin(TimeGenerated, trendBinSize)')]",
-                    "dataSourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsWorkspaceName'))]",
-                    "queryType": "ResultCount"
-                },
-                "schedule": {
-                    "frequencyInMinutes": 5,
-                    "timeWindowInMinutes": 10
-                },
-                "action": {
-                    "odata.type": "Microsoft.WindowsAzure.Management.Monitoring.Alerts.Models.Microsoft.AppInsights.Nexus.DataContracts.Resources.ScheduledQueryRules.AlertingAction",
-                    "severity": 3,
-                    "trigger": {
-                        "thresholdOperator": "GreaterThan",
-                        "threshold": 3,
-                        "metricTrigger": {
-                            "thresholdOperator": "GreaterThan",
-                            "threshold": 2,
-                            "metricTriggerType": "Consecutive"
+                "description":"Example from: https://docs.microsoft.com/azure/azure-monitor/insights/container-insights-alerts",
+                "actions": [],
+                "criteria": {
+                    "allOf": [
+                        {
+                            "metricMeasureColumn": "FailedCount",
+                            "operator": "GreaterThan",
+                            "query": "let trendBinSize = 1m;\r\nKubePodInventory\r\n| distinct ClusterName, TimeGenerated\r\n| summarize ClusterSnapshotCount = count() by bin(TimeGenerated, trendBinSize), ClusterName\r\n| join hint.strategy=broadcast (\r\n    KubePodInventory\r\n    | distinct ClusterName, Computer, PodUid, TimeGenerated, PodStatus\r\n    | summarize TotalCount = count(),\r\n        PendingCount = sumif(1, PodStatus =~ \"Pending\"),\r\n        RunningCount = sumif(1, PodStatus =~ \"Running\"),\r\n        SucceededCount = sumif(1, PodStatus =~ \"Succeeded\"),\r\n        FailedCount = sumif(1, PodStatus =~ \"Failed\")\r\n        by ClusterName, bin(TimeGenerated, trendBinSize)\r\n    )\r\n    on ClusterName, TimeGenerated \r\n| extend UnknownCount = TotalCount - PendingCount - RunningCount - SucceededCount - FailedCount\r\n| project TimeGenerated,\r\n    ClusterName,\r\n    TotalCount = todouble(TotalCount) / ClusterSnapshotCount,\r\n    PendingCount = todouble(PendingCount) / ClusterSnapshotCount,\r\n    RunningCount = todouble(RunningCount) / ClusterSnapshotCount,\r\n    SucceededCount = todouble(SucceededCount) / ClusterSnapshotCount,\r\n    FailedCount = todouble(FailedCount) / ClusterSnapshotCount,\r\n    UnknownCount = todouble(UnknownCount) / ClusterSnapshotCount\r\n",
+                            "threshold": 3,
+                            "timeAggregation": "Average",
+                            "dimensions": [],
+                            "failingPeriods": {
+                                "minFailingPeriodsToAlert": 1,
+                                "numberOfEvaluationPeriods": 1
+                            },
+                            "resourceIdColumn": ""
                         }
-                    }
-                }
+                    ]
+                },
+                "enabled": true,
+                "evaluationFrequency": "PT5M",
+                "scopes": [
+                    "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
+                ],
+                "severity": 3,
+                "windowSize": "PT5M",
+                "muteActionsDuration": null,
+                "overrideQueryTimeRange": "P2D"
             }
-        },*/
+        },
         {
             "type": "Microsoft.Insights/activityLogAlerts",
             "apiVersion": "2017-04-01",
