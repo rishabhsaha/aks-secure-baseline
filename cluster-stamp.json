@@ -128,6 +128,7 @@
         "vnetName": "[split(parameters('targetVnetResourceId'),'/')[8]]",
         "vnetSystemNodePoolSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/snet-cluster-systemnodepool')]",
         "vnetInScopeNodePoolSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/snet-cluster-inscopenodepools')]",
+        "vnetPrivateLinkSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/snet-privatelinkendpoints')]",
         "vnetOutOfScopeNodePoolSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/snet-cluster-outofscopenodepools')]",
         "vnetIngressServicesSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/snet-cluster-ingressservices')]",
         "vnetManagementOpsSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/snet-management-ops')]",
@@ -410,19 +411,19 @@
         },
         {
             "type": "Microsoft.Network/privateEndpoints",
-            "apiVersion": "2020-05-01",
-            "name": "pes-inscopenodepools-snet-akv",
+            "apiVersion": "2020-11-01",
+            "name": "[concat('pe-', variables('keyVaultName'))]",
             "location": "[parameters('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
             ],
             "properties": {
                 "subnet": {
-                    "id": "[variables('vnetInScopeNodePoolSubnetResourceId')]"
+                    "id": "[variables('vnetPrivateLinkSubnetResourceId')]"
                 },
                 "privateLinkServiceConnections": [
                     {
-                        "name": "inscope-nodepools",
+                        "name": "[concat('to-', variables('vnetName'))]",
                         "properties": {
                             "privateLinkServiceId": "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
                             "groupIds": [
@@ -435,11 +436,11 @@
             "resources": [
                 {
                     "type": "privateDnsZoneGroups",
-                    "apiVersion": "2020-05-01",
-                    "name": "default",
+                    "apiVersion": "2020-11-01",
+                    "name": "[concat('for-', variables('keyVaultName'))]",
                     "location": "[parameters('location')]",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Network/privateEndpoints', 'pes-inscopenodepools-snet-akv')]"
+                        "[resourceId('Microsoft.Network/privateEndpoints', concat('pe-', variables('keyVaultName')))]"
                     ],
                     "properties": {
                         "privateDnsZoneConfigs": [
@@ -456,19 +457,19 @@
         },
         {
             "type": "Microsoft.Network/privateEndpoints",
-            "apiVersion": "2020-05-01",
-            "name": "pes-inscopenodepools-snet-acr",
+            "apiVersion": "2020-11-01",
+            "name": "[concat('pe-', variables('defaultAcrName'))]",
             "location": "[parameters('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.ContainerRegistry/registries/replications', variables('defaultAcrName'), parameters('geoRedundancyLocation'))]"
             ],
             "properties": {
                 "subnet": {
-                    "id": "[variables('vnetInScopeNodePoolSubnetResourceId')]"
+                    "id": "[variables('vnetPrivateLinkSubnetResourceId')]"
                 },
                 "privateLinkServiceConnections": [
                     {
-                        "name": "inscope-nodepools",
+                        "name": "[concat('to-', variables('vnetName'))]",
                         "properties": {
                             "privateLinkServiceId": "[resourceId('Microsoft.ContainerRegistry/registries', variables('defaultAcrName'))]",
                             "groupIds": [
@@ -481,103 +482,11 @@
             "resources": [
                 {
                     "type": "privateDnsZoneGroups",
-                    "apiVersion": "2020-05-01",
-                    "name": "default",
+                    "apiVersion": "2020-11-01",
+                    "name": "[concat('for-', variables('defaultAcrName'))]",
                     "location": "[parameters('location')]",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Network/privateEndpoints', 'pes-inscopenodepools-snet-acr')]"
-                    ],
-                    "properties": {
-                        "privateDnsZoneConfigs": [
-                            {
-                                "name": "privatelink-azurecr-io",
-                                "properties": {
-                                    "privateDnsZoneId": "[resourceId(variables('vNetResourceGroup'), 'Microsoft.Network/privateDnsZones', 'privatelink.azurecr.io')]"
-                                }
-                            }
-                        ]
-                    }
-                }
-            ]
-        },
-        {
-            "type": "Microsoft.Network/privateEndpoints",
-            "apiVersion": "2020-05-01",
-            "name": "pes-outofscopenodepools-snet-kv",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
-            ],
-            "properties": {
-                "subnet": {
-                    "id": "[variables('vnetOutOfScopeNodePoolSubnetResourceId')]"
-                },
-                "privateLinkServiceConnections": [
-                    {
-                        "name": "outofscope-nodepools",
-                        "properties": {
-                            "privateLinkServiceId": "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
-                            "groupIds": [
-                                "vault"
-                            ]
-                        }
-                    }
-                ]
-            },
-            "resources": [
-                {
-                    "type": "privateDnsZoneGroups",
-                    "apiVersion": "2020-05-01",
-                    "name": "default",
-                    "location": "[parameters('location')]",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Network/privateEndpoints', 'pes-outofscopenodepools-snet-kv')]"
-                    ],
-                    "properties": {
-                        "privateDnsZoneConfigs": [
-                            {
-                                "name": "privatelink-akv-net",
-                                "properties": {
-                                    "privateDnsZoneId": "[resourceId(variables('vNetResourceGroup'),'Microsoft.Network/privateDnsZones','privatelink.vaultcore.azure.net')]"
-                                }
-                            }
-                        ]
-                    }
-                }
-            ]
-        },
-        {
-            "type": "Microsoft.Network/privateEndpoints",
-            "apiVersion": "2020-05-01",
-            "name": "pes-outofscopenodepools-snet-acr",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[resourceId('Microsoft.ContainerRegistry/registries/replications', variables('defaultAcrName'), parameters('geoRedundancyLocation'))]"
-            ],
-            "properties": {
-                "subnet": {
-                    "id": "[variables('vnetOutOfScopeNodePoolSubnetResourceId')]"
-                },
-                "privateLinkServiceConnections": [
-                    {
-                        "name": "outofscope-nodepools",
-                        "properties": {
-                            "privateLinkServiceId": "[resourceId('Microsoft.ContainerRegistry/registries', variables('defaultAcrName'))]",
-                            "groupIds": [
-                                "registry"
-                            ]
-                        }
-                    }
-                ]
-            },
-            "resources": [
-                {
-                    "type": "privateDnsZoneGroups",
-                    "apiVersion": "2020-05-01",
-                    "name": "default",
-                    "location": "[parameters('location')]",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Network/privateEndpoints', 'pes-outofscopenodepools-snet-acr')]"
+                        "[resourceId('Microsoft.Network/privateEndpoints', concat('pe-', variables('defaultAcrName')))]"
                     ],
                     "properties": {
                         "privateDnsZoneConfigs": [

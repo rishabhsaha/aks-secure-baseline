@@ -67,7 +67,7 @@ Your github repo will be the source of truth for your cluster's configuration. T
    az account show
 
    # If not, select the correct subscription
-   az account set -s <subscription name or id>
+   # az account set -s <subscription name or id>
    ```
 
 1. _From your Azure Bastion connection_, get your AKS credentials and set your `kubectl` context to your cluster.
@@ -80,7 +80,7 @@ Your github repo will be the source of truth for your cluster's configuration. T
 
 1. _From your Azure Bastion connection_, test cluster access and authenticate as a cluster admin user.
 
-   The following command will force you to authenticate into your AKS cluster's control plane. This will start yet another device login flow. For this one (**Azure Kubernetes Service AAD Client**), log in with a user that is a member of your cluster admin group in the Azure AD tenet you selected to be used for Kubernetes Cluster API RBAC. This is the user you're performing cluster management commands (e.g. `kubectl`) as.
+   The following command will force you to authenticate into your AKS cluster's control plane. This will start yet another device login flow. For this one (**Azure Kubernetes Service AAD Client**), log in with a user that is a member of your cluster admin group in the Azure AD tenet you selected to be used for Kubernetes Cluster API RBAC. Also this is where any specified Azure AD conditional access policies would take effect if they had been applied. Remember, the identity you log in here with is the identity you're performing cluster management commands (e.g. `kubectl`) as.
 
    ```bash
    kubectl get nodes
@@ -90,24 +90,24 @@ Your github repo will be the source of truth for your cluster's configuration. T
 
    ```output
    NAME                                  STATUS   ROLES   AGE   VERSION
-   aks-npinscope01-26621167-vmss000000   Ready    agent   20m   v1.19.6
-   aks-npinscope01-26621167-vmss000001   Ready    agent   20m   v1.19.6
-   aks-npooscope01-26621167-vmss000000   Ready    agent   20m   v1.19.6
-   aks-npooscope01-26621167-vmss000001   Ready    agent   20m   v1.19.6
-   aks-npsystem-26621167-vmss000000      Ready    agent   20m   v1.19.6
-   aks-npsystem-26621167-vmss000001      Ready    agent   20m   v1.19.6
-   aks-npsystem-26621167-vmss000002      Ready    agent   20m   v1.19.6
+   aks-npinscope01-26621167-vmss000000   Ready    agent   20m   v1.20.2
+   aks-npinscope01-26621167-vmss000001   Ready    agent   20m   v1.20.2
+   aks-npooscope01-26621167-vmss000000   Ready    agent   20m   v1.20.2
+   aks-npooscope01-26621167-vmss000001   Ready    agent   20m   v1.20.2
+   aks-npsystem-26621167-vmss000000      Ready    agent   20m   v1.20.2
+   aks-npsystem-26621167-vmss000001      Ready    agent   20m   v1.20.2
+   aks-npsystem-26621167-vmss000002      Ready    agent   20m   v1.20.2
    ```
 
 1. _From your Azure Bastion connection_, bootstrap Flux.
 
    ```bash
    git clone https://github.com/[[YOUR_GITHUB_ACCOUNT_NAME]]/aks-regulated-cluster
-   cd aks-regulated-cluster
+   cd aks-regulated-cluster/cluster-manifests
 
    # Apply the Flux CRDs before applying the rest of flux (to avoid a race condition in the sync settings)
-   kubectl apply -f cluster-manifests/flux-system/gotk-crds.yaml
-   kubectl apply -k cluster-manifests/flux-system
+   kubectl apply -f flux-system/gotk-crds.yaml
+   kubectl apply -k flux-system
    ```
 
    > The Flux CLI does have a built-in bootstrap feature. To ensure everyone using this walkthrough has a consistent experience (not one based on what version of Flux cli they may have installed), we've performed that bootstrap process more "manually" above. Also, you might consider doing the same with your production clusters; as all manifests you apply should be well-known, intentional, and auditable. Doing so will eliminate any guess work from what is or is not being deployed. It does mean that you'll manually be managing some manifests that could otherwise be managed in a more opaque way, and we suggest getting comfortable with that notion. You'll see this play out not just in Flux, but in Open Service Mesh, Falco, etc. Ensure you understand the risks associated with (and benefits gained from) whatever _convenance_ solutions you bring to your cluster (helm, cli "installer" commands, etc.) and you're comfortable with that layer of indirection bring introduced.
