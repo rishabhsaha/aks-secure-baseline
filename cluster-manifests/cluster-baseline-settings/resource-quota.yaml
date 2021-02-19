@@ -22,8 +22,8 @@ spec:
     # kured
     count/daemonsets.apps: "5"
 
-    # osm-controller
-    count/services: "1"
+    # osm-controller+validator
+    count/services: "2"
 
     # csi-secrets-store (3*[oos nodepood nodes] + 3*[ins nodepool nodes] = 12)
     # csi-secrets-store-provider-azure (1*[oos nodepood nodes] + 1*[ins nodepool nodes] = 4)

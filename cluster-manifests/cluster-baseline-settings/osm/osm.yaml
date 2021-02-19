@@ -2,6 +2,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: cluster-osm
+  namespace: cluster-baseline-settings
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -14,7 +15,9 @@ data:
   envoy_log_level: "info"
   enable_debug_server: "false"
   prometheus_scraping: "true"
+
   tracing_enable: "false"
+
   use_https_ingress: "true"
   service_cert_validity_duration: "24h"
   namespace: cluster-baseline-settings
@@ -102,13 +105,30 @@ spec:
   selector:
     app: osm-controller
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: osm-config-validator
+  namespace: cluster-baseline-settings
+  labels:
+    app: osm-controller
+spec:
+  ports:
+    - name: config-validator
+      port: 9093
+      targetPort: 9093
+  selector:
+    app: osm-controller
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: osm-controller
+  namespace: cluster-baseline-settings
   labels:
     app: osm-controller
     meshName: osm
+    enforceSingleMesh: "true"
 spec:
   replicas: 1
   selector:
@@ -156,7 +176,7 @@ spec:
           resources:
             limits:
               cpu: 1500m
-              memory: 256Mi
+              memory: 512Mi
             requests:
               cpu: 500m
               memory: 32Mi
@@ -175,6 +195,7 @@ spec:
               path: /health/alive
               port: 9091
           env:
+          # The CONTROLLER_POD_NAME env variable sets pod name dynamically, used by osm-controller to register events
             - name: CONTROLLER_POD_NAME
               valueFrom:
                 fieldRef:
@@ -199,6 +220,8 @@ webhooks:
       namespace: cluster-baseline-settings
       path: /mutate-pod-creation
       port: 9090
+  # failurePolicy should always be set to Fail to ensure no new resources get created without a sidecar
+  #   (and bypass TrafficTarget policies) if the webhook server is down
   failurePolicy: Fail
   matchPolicy: Exact
   namespaceSelector:
@@ -208,16 +231,18 @@ webhooks:
       # This label is explicitly set to ignore a namespace
       - key: "openservicemesh.io/ignore"
         operator: DoesNotExist
+      # Ensure pods in system/control plane namespaces are never injected with a sidecar
       - key: "name"
         operator: NotIn
         values:
         - cluster-baseline-settings
-        - flux-system
         - falco-system
-        - kube-system
+        - flux-system
+        - gatekeeper-system
         - kube-node-lease
         - kube-public
-        - gatekeeper-system
+        - kube-system
+        - osm-system
   rules:
     - apiGroups:
         - ""
@@ -227,3 +252,33 @@ webhooks:
         - CREATE
       resources:
         - pods
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: ValidatingWebhookConfiguration
+metadata:
+  labels:
+    app: osm-controller
+  name: osm-webhook-osm
+webhooks:
+- name: osm-config-webhook.k8s.io
+  clientConfig:
+    service:
+      name: osm-config-validator
+      namespace: cluster-baseline-settings
+      path: /validate-webhook
+      port: 9093
+  failurePolicy: Fail
+  matchPolicy: Exact
+  namespaceSelector:
+    matchLabels:
+      name: cluster-baseline-settings
+  rules:
+    - apiGroups:
+        - ""
+      apiVersions:
+        - v1
+      operations:
+        - CREATE
+        - UPDATE
+      resources:
+        - configmaps
