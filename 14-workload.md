@@ -1,8 +1,57 @@
-# Deploy the Workload (ASP.NET Core Docker web app)
+# Deploy the Workload
 
 The cluster now has an [Traefik configured with a TLS certificate](./13-secret-managment-and-ingress-controller.md). The last step in the process is to deploy the workload, which will demonstrate the system's functions.
 
+## Expected results
+
+TODO
+
 ## Steps
+
+1. Clone the source code for the workload
+
+   TODO: If we do this right, we can have the build directly download and run the build from github, no need to clone.  Let's make sure we set it up to do that easily.
+
+   ```bash
+   cd ../..
+   git clone -b feature/regulated-web-api https://github.com/mspnp/aks-secure-baseline aks-example-workload
+   cd aks-example-workload/SimpleChainApi/
+   ```
+
+1. Use your Azure Container Registry build agents to build and quarantine the workload
+
+   ```bash
+   ACR_NAME_QUARANTINE=$(az deployment group show -g rg-bu0001a0005 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
+
+   az acr build -f ./SimpleChainApi/Dockerfile -t quarantine/a0005/chain-api:1.0 -r $ACR_NAME_QUARANTINE -g rg-bu0001a0005 --platform linux/amd64 --target build . --agent-pool acragent
+
+   # You may see BlobNotFound error messages in the early part of the build, this is
+   # okay, and you shouldn't terminate the command. It's waiting for source code to
+   # be uploaded.
+   ```
+
+   We are using your own dedicated image build agents here, in a dedicated subnet, for this process. Securing your workload pipeline components are critical to having a compliant solution. Ensure your build pipeline matches your desired security posture. Consider performing image building in an Azure Container Registry that is network-isolated from your clusters (unlike what we're showing here where it's on the same virtual network for simplicity.) Ensure build logs are captured (streamed at build time, or available afterwards via `az acr taskrun logs` or series of direct API calls). That build instance might also serve as your quarantine instance as well. Once the build is complete and post-build audits are complete, then it can be imported to your "live" registry.
+
+1. Release the workload image from quarantine
+
+   TODO: Consider returning a quarantine registry in the outputs of the arm template so these lines can technically look different, even if they are the same values :)
+
+   ```bash
+   # Get your Azure Container Registry service names (in this reference implementation, they are technically the same.)
+   ACR_NAME_QUARANTINE=$(az deployment group show -g rg-bu0001a0005 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
+   ACR_NAME=$(az deployment group show -g rg-bu0001a0005 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
+
+   az acr import --source quarantine/a0005/chain-api:1.0 -r $ACR_NAME_QUARANTINE -t live/a0005/chain-api:1.0 -n $ACR_NAME
+   ```
+
+
+
+
+
+
+
+
+
 
 > :book: The Contoso app team is about to conclude this journey, but they need an app to test their new infrastructure. For this task they've picked out the venerable [ASP.NET Core Docker sample web app](https://github.com/dotnet/dotnet-docker/tree/master/samples/aspnetapp).
 

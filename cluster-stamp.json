@@ -129,6 +129,7 @@
         "vnetSystemNodePoolSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/snet-cluster-systemnodepool')]",
         "vnetInScopeNodePoolSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/snet-cluster-inscopenodepools')]",
         "vnetPrivateLinkSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/snet-privatelinkendpoints')]",
+        "vnetAcrBuildSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/snet-management-acragents')]",
         "vnetOutOfScopeNodePoolSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/snet-cluster-outofscopenodepools')]",
         "vnetIngressServicesSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/snet-cluster-ingressservices')]",
         "vnetManagementOpsSubnetResourceId": "[concat(parameters('targetVnetResourceId'), '/subnets/snet-management-ops')]",
@@ -1279,9 +1280,25 @@
                     "name": "[parameters('geoRedundancyLocation')]",
                     "location": "[parameters('geoRedundancyLocation')]",
                     "dependsOn": [
-                        "[variables('defaultAcrName')]"
+                        "[resourceId('Microsoft.ContainerRegistry/registries', variables('defaultAcrName'))]"
                     ],
                     "properties": {}
+                },
+                {
+                    "type": "agentPools",
+                    "apiVersion": "2019-06-01-preview",
+                    "name": "acragent",
+                    "location": "[parameters('location')]",
+                    "comments": "ACR Build Agent pool",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.ContainerRegistry/registries', variables('defaultAcrName'))]"
+                    ],
+                    "properties": {
+                        "count": 1,
+                        "os": "Linux",
+                        "tier": "S1",
+                        "virtualNetworkSubnetResourceId": "[variables('vnetAcrBuildSubnetResourceId')]"
+                    }
                 },
                 {
                     "type": "providers/diagnosticSettings",
