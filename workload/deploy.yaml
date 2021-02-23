@@ -6,7 +6,7 @@ metadata:
     app: ingress-endpoint-service
   annotations:
     service.beta.kubernetes.io/azure-load-balancer-internal: "true"
-    service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "snet-clusteringressservices"
+    service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "snet-cluster-ingressservices"
 spec:
   type: LoadBalancer
   loadBalancerIP: 10.240.4.5
@@ -35,7 +35,7 @@ spec:
     spec:
       containers:
       - name: ingress-endpoint
-        image: acraks43tj3q6dr2mfq.azurecr.io/chain-api:2.0
+        image: acraks43tj3q6dr2mfq.azurecr.io/live/a0005/chain-api:2.0
         ports:
         - containerPort: 80
           name: api
@@ -92,7 +92,7 @@ spec:
     spec:
       containers:
       - name: service-a
-        image: acraks43tj3q6dr2mfq.azurecr.io/chain-api:2.0
+        image: acraks43tj3q6dr2mfq.azurecr.io/live/a0005/chain-api:2.0
         ports:
         - containerPort: 80
           name: api
@@ -149,7 +149,7 @@ spec:
     spec:
       containers:
       - name: service-b
-        image: acraks43tj3q6dr2mfq.azurecr.io/chain-api:2.0
+        image: acraks43tj3q6dr2mfq.azurecr.io/live/a0005/chain-api:2.0
         ports:
         - containerPort: 80
           name: api
@@ -206,7 +206,7 @@ spec:
     spec:
       containers:
       - name: service-c
-        image: acraks43tj3q6dr2mfq.azurecr.io/chain-api:2.0
+        image: acraks43tj3q6dr2mfq.azurecr.io/live/a0005/chain-api:2.0
         ports:
         - containerPort: 80
           name: api

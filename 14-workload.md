@@ -27,7 +27,7 @@ TODO: Consider returning a quarantine registry in the outputs of the arm templat
    ```bash
    ACR_NAME_QUARANTINE=$(az deployment group show -g rg-bu0001a0005 -n cluster-stamp --query properties.outputs.containerRegistryName.value -o tsv)
 
-   az acr build -t quarantine/a0005/chain-api:1.0 -r $ACR_NAME_QUARANTINE -g rg-bu0001a0005 --platform linux/amd64 --agent-pool acragent -f SimpleChainApi/Dockerfile https://github.com/mspnp/aks-secure-baseline#feature/regulated-web-api-ui:SimpleChainApi
+   az acr build -t quarantine/a0005/chain-api:1.0 -r $ACR_NAME_QUARANTINE --platform linux/amd64 --agent-pool acragent -f SimpleChainApi/Dockerfile https://github.com/mspnp/aks-secure-baseline#feature/regulated-web-api-ui:SimpleChainApi
    ```
 
    > You may see one or more `BlobNotFound` error messages in the early part of the build; this is okay, and you shouldn't terminate the command. It's polling for source code to be completely transferred from GitHub before proceeding. Az cli will emit show this process in what appears to look like an error state.
