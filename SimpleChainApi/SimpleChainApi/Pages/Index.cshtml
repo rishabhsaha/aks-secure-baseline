@@ -1,9 +1,22 @@
 ﻿@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "REST Client";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-</div>
+<h3 class="text-danger">Simple Chain Api</h3>
+<form method="post" class="form-horizontal">
+    <div class="form-group left">
+
+        <label for="Deep" class="control-label col-sm-1">Deep</label>
+
+        <div class="col-sm-2">
+            <input type="text" asp-for="Deep" class="form-control" value="2" />
+        </div>
+
+
+        <div class="col-sm-offset-1">
+            <input type="submit" value="Submit" class="btn btn-default"/>
+        </div>
+    </div>
+</form>
