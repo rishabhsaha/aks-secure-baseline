@@ -53,8 +53,6 @@ namespace RestAPIClient.Pages
             {
                 return RedirectToPage("Error", new { msg = ex.Message + " | Are you missing some Json keys and values? Please check your Json data." });
             }
-
-
         }
     }
 }

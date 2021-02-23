@@ -20,9 +20,9 @@
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
-        "SELF_HOSTS_DEPENDENCIES": "http://localhost:5000",
+        "SELF_HOSTS_DEPENDENCIES": "http://localhost:5000,http://localhost:5000",
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "EXTERNAL_DEPENDENCIES": "https://whatismyip.io/"
+        "EXTERNAL_DEPENDENCIES": "https://whatismyip.io/,https://failure/"
       },
       "dotnetRunMessages": "true",
       "applicationUrl": "http://localhost:5000"
