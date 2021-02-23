@@ -1,0 +1,232 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingress-endpoint-service
+  labels:
+    app: ingress-endpoint-service
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+    service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "snet-clusteringressservices"
+spec:
+  type: LoadBalancer
+  loadBalancerIP: 10.240.4.5
+  externalTrafficPolicy: Local
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: api
+    name: http
+  selector:
+    app: ingress-endpoint
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ingress-endpoint
+spec:
+  selector:
+    matchLabels:
+      app: ingress-endpoint
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: ingress-endpoint
+    spec:
+      containers:
+      - name: ingress-endpoint
+        image: acraks43tj3q6dr2mfq.azurecr.io/chain-api:2.0
+        ports:
+        - containerPort: 80
+          name: api
+          protocol: TCP
+        env:
+        - name: SELF_HOSTS_DEPENDENCIES
+          value: "http://service-a,http://service-b,http://service-c"
+        - name: EXTERNAL_DEPENDENCIES
+          value: "https://whatismyip.io/"
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Development"
+        resources:
+          requests:
+            cpu: 200m
+            memory: 150Mi
+          limits:
+            cpu: 400m
+            memory: 250Mi
+      tolerations:
+      - key: pci-scope
+        effect: NoExecute
+        operator: Equal
+        value: out-of-scope
+---                 
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-a
+  labels:
+    app: service-a
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: api
+    name: http
+  selector:
+    app: service-a
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-a
+spec:
+  selector:
+    matchLabels:
+      app: service-a
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: service-a
+    spec:
+      containers:
+      - name: service-a
+        image: acraks43tj3q6dr2mfq.azurecr.io/chain-api:2.0
+        ports:
+        - containerPort: 80
+          name: api
+          protocol: TCP
+        env:
+        - name: SELF_HOSTS_DEPENDENCIES
+          value: "http://localhost,http://service-b,http://service-c"
+        - name: EXTERNAL_DEPENDENCIES
+          value: "https://whatismyip.io/"
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Development"
+        resources:
+          requests:
+            cpu: 200m
+            memory: 150Mi
+          limits:
+            cpu: 400m
+            memory: 250Mi
+      tolerations:
+      - key: pci-scope
+        effect: NoExecute
+        operator: Equal
+        value: out-of-scope
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-b
+  labels:
+    app: service-b
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: api
+    name: http
+  selector:
+    app: service-b
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-b
+spec:
+  selector:
+    matchLabels:
+      app: service-b
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: service-b
+    spec:
+      containers:
+      - name: service-b
+        image: acraks43tj3q6dr2mfq.azurecr.io/chain-api:2.0
+        ports:
+        - containerPort: 80
+          name: api
+          protocol: TCP
+        env:
+        - name: SELF_HOSTS_DEPENDENCIES
+          value: "http://service-a,http://localhost,http://service-c"
+        - name: EXTERNAL_DEPENDENCIES
+          value: "https://whatismyip.io/"
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Development"
+        resources:
+          requests:
+            cpu: 200m
+            memory: 150Mi
+          limits:
+            cpu: 400m
+            memory: 250Mi
+      tolerations:
+      - key: pci-scope
+        effect: NoExecute
+        operator: Equal
+        value: out-of-scope
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-c
+  labels:
+    app: service-c
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: api
+    name: http
+  selector:
+    app: service-c
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-c
+spec:
+  selector:
+    matchLabels:
+      app: service-c
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: service-c
+    spec:
+      containers:
+      - name: service-c
+        image: acraks43tj3q6dr2mfq.azurecr.io/chain-api:2.0
+        ports:
+        - containerPort: 80
+          name: api
+          protocol: TCP
+        env:
+        - name: SELF_HOSTS_DEPENDENCIES
+          value: "http://service-a,http://service-b,http://localhost"
+        - name: EXTERNAL_DEPENDENCIES
+          value: "https://whatismyip.io/"
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Development"
+        resources:
+          requests:
+            cpu: 200m
+            memory: 150Mi
+          limits:
+            cpu: 400m
+            memory: 250Mi
+      tolerations:
+      - key: pci-scope
+        effect: NoExecute
+        operator: Equal
+        value: out-of-scope
