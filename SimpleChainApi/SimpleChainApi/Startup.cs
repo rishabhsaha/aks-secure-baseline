@@ -27,6 +27,7 @@ namespace SimpleChainApi
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "SimpleChainApi", Version = "v1" });
             });
             services.AddHttpClient();
+            services.AddRazorPages();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -42,10 +43,13 @@ namespace SimpleChainApi
 
             app.UseRouting();
 
+            app.UseStaticFiles();
+
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapRazorPages();
                 endpoints.MapControllers();
             });
         }
