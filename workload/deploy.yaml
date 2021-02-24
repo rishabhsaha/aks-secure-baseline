@@ -19,6 +19,26 @@ spec:
   selector:
     app: ingress-endpoint
 ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ingress-endpoint-sa
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: service-a-sa
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: service-b-sa
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: service-c-sa
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -33,6 +53,7 @@ spec:
       labels:
         app: ingress-endpoint
     spec:
+      serviceAccount: ingress-endpoint-sa
       containers:
       - name: ingress-endpoint
         image: acraks43tj3q6dr2mfq.azurecr.io/live/a0005/chain-api:2.0
@@ -90,6 +111,7 @@ spec:
       labels:
         app: service-a
     spec:
+      serviceAccount: service-a-sa
       containers:
       - name: service-a
         image: acraks43tj3q6dr2mfq.azurecr.io/live/a0005/chain-api:2.0
@@ -147,6 +169,7 @@ spec:
       labels:
         app: service-b
     spec:
+      serviceAccount: service-b-sa
       containers:
       - name: service-b
         image: acraks43tj3q6dr2mfq.azurecr.io/live/a0005/chain-api:2.0
@@ -204,6 +227,7 @@ spec:
       labels:
         app: service-c
     spec:
+      serviceAccount: service-c-sa
       containers:
       - name: service-c
         image: acraks43tj3q6dr2mfq.azurecr.io/live/a0005/chain-api:2.0
