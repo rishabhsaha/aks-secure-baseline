@@ -37,6 +37,7 @@ namespace SimpleChainApi.Controllers
             var dependencyResult = new DependencyResult();
             if (depth > 0)
             {
+                dependencyResult.URL = $"{Request.Scheme}://{Request.Host}{Request.Path}";
                 var client = _clientFactory.CreateClient();
 
                 await ComputeExternalDependenciesAsync(client, dependencyResult);

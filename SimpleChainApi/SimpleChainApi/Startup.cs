@@ -2,9 +2,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authentication.Certificate;
 
 namespace SimpleChainApi
 {
@@ -22,30 +21,24 @@ namespace SimpleChainApi
         {
 
             services.AddControllers();
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "SimpleChainApi", Version = "v1" });
-            });
             services.AddHttpClient();
             services.AddRazorPages();
+            services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme)
+                .AddCertificate(options =>
+                    {
+                        options.AllowedCertificateTypes = CertificateTypes.All;
+                    });
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
         {
             logger.LogInformation("Starting.");
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "SimpleChainApi v1"));
-            }
 
             app.UseRouting();
 
-            app.UseStaticFiles();
+            app.UseHttpsRedirection();
 
-            app.UseAuthorization();
+            app.UseStaticFiles();
 
             app.UseEndpoints(endpoints =>
             {

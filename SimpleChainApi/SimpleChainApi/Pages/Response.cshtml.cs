@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using SimpleChainApi;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -25,13 +23,18 @@ namespace RestAPIClient.Pages
         {
             if (dependencyResult.ExternalDependencies.Any() || dependencyResult.SelfCalled.Any())
             {
-                sb.AppendLine("<br><div style='padding-left: " + indent + "em;'><br>");
+                sb.AppendLine($"<br><div style='padding-left: {indent} em;'>");
+                if (indent == 0) { 
+                    sb.AppendLine($"<b>{dependencyResult.URL}</b><br><br>");
+                }
+
                 sb.AppendLine("<label>External dependencies: </label><br><ul>");
                 foreach (var externalDependency in dependencyResult.ExternalDependencies)
                 {
                     var color = externalDependency.Success ? "text-success" : "text-danger";
+                    var status = externalDependency.StatusCode == 0 ? "Fail to connect" : $" StatusCode: {externalDependency.StatusCode}";
                     sb.Append($"<li><p class=\"{color}\"><i>{externalDependency.URI}</i><br>");
-                    sb.Append($" StatusCode: {externalDependency.StatusCode}");
+                    sb.Append(status);
                     sb.Append("</li></p>");
                 }
                 sb.Append("</ul>");
@@ -40,8 +43,9 @@ namespace RestAPIClient.Pages
                 foreach (var selfCalled in dependencyResult.SelfCalled)
                 {
                     var color = selfCalled.Success ? "text-success" : "text-danger";
+                    var status = selfCalled.StatusCode == 0 ? "Fail to connect" : $" StatusCode: {selfCalled.StatusCode}";
                     sb.Append($"<li><p class=\"{color}\"><i>{selfCalled.URI}</i><br>");
-                    sb.Append($" StatusCode: {selfCalled.StatusCode}");
+                    sb.Append(status);
                     Format(selfCalled.DependencyResult, sb, indent + 2);
                     sb.Append("</li></p>");
                 }

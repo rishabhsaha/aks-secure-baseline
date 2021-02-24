@@ -20,12 +20,13 @@
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
-        "SELF_HOSTS_DEPENDENCIES": "http://localhost:5000,http://localhost:5000",
+        "SELF_HOSTS_DEPENDENCIES": "https://localhost:5001,https://localhost:5001",
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "EXTERNAL_DEPENDENCIES": "https://whatismyip.io/,https://failure/"
+        "EXTERNAL_DEPENDENCIES": "https://whatismyip.io/,https://failure/",
+        "DEEPTH": "2"
       },
       "dotnetRunMessages": "true",
-      "applicationUrl": "http://localhost:5000"
+      "applicationUrl": "https://localhost:5001"
     },
     "Docker": {
       "commandName": "Docker",

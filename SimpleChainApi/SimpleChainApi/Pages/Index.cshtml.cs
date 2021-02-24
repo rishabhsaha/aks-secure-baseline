@@ -1,19 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
-using System.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace RestAPIClient.Pages
 {
     public class IndexModel : PageModel
     {
+        private const string DEEPTH = "DEEPTH";
+        public IndexModel(IConfiguration configuration)
+        {
+            Deep = configuration[DEEPTH];
+        }
+
         [BindProperty]
         public string Deep { get; set; }
 

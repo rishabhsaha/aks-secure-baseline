@@ -12,6 +12,9 @@ namespace SimpleChainApi
             SelfCalled = Enumerable.Empty<SelfDependencyCalled>();
         }
 
+        [JsonPropertyName("url")]
+        public string URL { get; set; }
+
         [JsonPropertyName("externalDependencies")]
         public IEnumerable<URLCalled> ExternalDependencies { get; set; }
 
