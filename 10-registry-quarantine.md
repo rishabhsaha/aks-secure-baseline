@@ -51,7 +51,10 @@ Using a security agent that is container-aware and can operate from within the c
    az acr import --source docker.io/library/busybox:1.33.0 -t quarantine/library/busybox:1.33.0 -n $ACR_NAME_QUARANTINE
    az acr import --source docker.io/weaveworks/kured:1.6.1 -t quarantine/weaveworks/kured:1.6.1 -n $ACR_NAME_QUARANTINE
    az acr import --source docker.io/envoyproxy/envoy-alpine:v1.17.0 -t quarantine/envoyproxy/envoy-alpine:v1.17.0 -n $ACR_NAME_QUARANTINE
+   az acr import --source docker.io/library/traefik:2.4.5 -t quarantine/library/traefik:2.4.5 -n $ACR_NAME_QUARANTINE
    ```
+
+   TODO: Just dropped traefik in here even though it's not needed for bootstrapping -- likely should move to later point in the instructions.
 
    > For simplicity we are NOT importing images that are coming from Microsoft Container Registry (MCR). This is not an endorsement of the suitability of those images to be pulled without going through quarantine or depending public container registries for production runtime needs. All container images that you bring to the cluster should pass through your quarantine process. For transparency, images that we skipped importing are for [Open Service Mesh](./cluster-manifests/cluster-baseline-settings/osm/) and [CSI Secret Store](./cluster-manifests/cluster-baseline-settings/secrets-store-csi/). Both of these are [progressing to eventually be AKS add-ons in the cluster](https://aka.ms/aks/roadmap), and as such would have been pre-deployed to your cluster like other add-ons (E.g. Azure Policy and Azure Monitor) so you wouldn't need to bootstrap the cluster with them yourself. We recommend you do bring these into this import process, and once you've done that you can update the Azure Policy `allowedContainerImagesRegex` to remove `mcr.microsoft.com/.+` as a valid source of images, leaving just `<your acr instance>/live/.+` as the only valid source.
 
@@ -86,6 +89,7 @@ Using a security agent that is container-aware and can operate from within the c
    az acr import --source quarantine/library/busybox:1.33.0 -r $ACR_NAME_QUARANTINE -t live/library/busybox:1.33.0 -n $ACR_NAME
    az acr import --source quarantine/weaveworks/kured:1.6.1 -r $ACR_NAME_QUARANTINE -t live/weaveworks/kured:1.6.1 -n $ACR_NAME
    az acr import --source quarantine/envoyproxy/envoy-alpine:v1.17.0 -r $ACR_NAME_QUARANTINE -t live/envoyproxy/envoy-alpine:v1.17.0 -n $ACR_NAME
+   az acr import --source quarantine/library/traefik:2.4.5 -r $ACR_NAME_QUARANTINE -t live/library/traefik:2.4.5 -n $ACR_NAME
    ```
 
    > You've deployed an alert called **Image Imported into ACR from source other than approved Quarantine** that will fire if you import an image directly to `live/` without coming from `quarantine/`. If you'd like to see that trigger, go ahead and import some other image directly to `live/` (e.g. `az acr import --source docker.io/library/busybox:1.33.0 -t live/library/busybox:SkippedQuarantine -n $ACR_NAME`). Within ten minutes, you should see [this alert trigger in the Azure Portal](https://portal.azure.com/#blade/Microsoft_Azure_Monitoring/AlertsManagementSummaryBlade) and if you click **View query result** within the alert you'll see the offending images' details.

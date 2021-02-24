@@ -1,0 +1,289 @@
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: traefik-ingress-controller
+  labels:
+    app.kubernetes.io/name: traefik-ingress-ilb
+    app.kubernetes.io/instance: traefik-ingress-ilb
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: traefik-ingress-controller
+  namespace: a0008
+  labels:
+    app.kubernetes.io/name: traefik-ingress-ilb
+    app.kubernetes.io/instance: traefik-ingress-ilb
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - services
+      - endpoints
+      - secrets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+      - networking.k8s.io
+    resources:
+      - ingresses
+      - ingressclasses
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+      - networking.k8s.io
+    resources:
+      - ingresses/status
+    verbs:
+      - update
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: traefik-watch-workloads
+  namespace: api
+  labels:
+    app.kubernetes.io/name: traefik-ingress-ilb
+    app.kubernetes.io/instance: traefik-ingress-ilb
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: traefik-ingress-controller
+subjects:
+- kind: ServiceAccount
+  name: traefik-ingress-controller
+  namespace: api
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: traefik-ingress-config
+  namespace: a0008
+  labels:
+    app.kubernetes.io/name: traefik-ingress-ilb
+    app.kubernetes.io/instance: traefik-ingress-ilb
+data:
+  traefik.toml: |
+    [metrics]
+      [metrics.prometheus]
+        entryPoint = "metrics"
+        addEntryPointsLabels = true
+        addServicesLabels = true
+    [accessLog]
+      format = "common"
+    [global]
+      checkNewVersion = false
+      sendAnonymousUsage = false
+    [log]
+      level = "ERROR"
+      format = "common"
+    [api]
+      insecure = false
+      dashboard = false
+    [providers]
+      providersThrottleDuration = 10
+      [providers.file]
+        filename = "/config/traefik.toml"
+        watch = true
+      [providers.kubernetesingress]
+        ingressClass = "traefik-internal"
+        namespaces = ["api"]
+    #    [providers.kubernetesIngress.ingressEndpoint]
+    #      publishedService = "api/traefik-ingress-service"
+    # Enable gzip compression
+    #[http.middlewares]
+    #  [http.middlewares.gzip-compress.compress]
+    #  [http.middlewares.app-gateway-snet.ipWhiteList]
+    #    sourceRange = ["10.240.4.16/28"]
+    [entryPoints]
+      [entryPoints.metrics]
+        address = ":8082"
+    #  [entryPoints.traefik]
+    #    address = ":9000"
+      [entryPoints.web]
+        address = ":8080/tcp"
+        [entryPoints.web.forwardedHeaders]
+          trustedIPs = ["10.240.4.16/28"]
+    #  [entryPoints.websecure]
+    #    address = ":8443/tcp"
+    #    [entryPoints.websecure.forwardedHeaders]
+    #      trustedIPs = ["10.240.4.16/28"]
+    #    [entryPoints.websecure.http.tls]
+    #      options = "default"
+    [ping]
+      entryPoint = "traefik"
+    [tls]
+    #  # without duplicating this cert config and with SNI enabled, Traefik won't
+    #  # find the certificates for your host. It may be a Traefik's issue.
+    #  [[tls.certificates]]
+    #    certFile = "/certs/tls.crt"
+    #    keyFile = "/certs/tls.key"
+    #    stores = ["default"]
+    #  [tls.stores]
+    #    [tls.stores.default]
+    #      [tls.stores.default.defaultCertificate]
+    #        # without specifying in here your certs, Traefik will create its own
+    #        # certificate
+    #        certFile = "/certs/tls.crt"
+    #        keyFile = "/certs/tls.key"
+      [tls.options.default]
+        minVersion = "VersionTLS12"
+        sniStrict = true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: traefik-ingress-service
+  namespace: a0008
+  labels:
+    app.kubernetes.io/name: traefik-ingress-ilb
+    app.kubernetes.io/instance: traefik-ingress-ilb
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+    service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "snet-cluster-ingressservices"
+spec:
+  type: LoadBalancer
+  loadBalancerIP: 10.240.4.6
+  externalTrafficPolicy: Local
+  selector:
+    app.kubernetes.io/name: traefik-ingress-ilb
+    app.kubernetes.io/instance: traefik-ingress-ilb
+  ports:
+  #- port: 443
+  #  name: https
+  #  targetPort: websecure
+  - port: 80
+    name: http
+    targetPort: web
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: traefik-ingress-controller
+  namespace: api
+  labels:
+    app.kubernetes.io/name: traefik-ingress-ilb
+    app.kubernetes.io/instance: traefik-ingress-ilb
+    # aadpodidbinding: traefik-ingress-controller
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: traefik-ingress-ilb
+      app.kubernetes.io/instance: traefik-ingress-ilb
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8082"
+      labels:
+        app.kubernetes.io/name: traefik-ingress-ilb
+        app.kubernetes.io/instance: traefik-ingress-ilb
+        # aadpodidbinding: traefik-ingress-controller
+    spec:
+      serviceAccountName: traefik-ingress-controller
+      terminationGracePeriodSeconds: 60
+      hostNetwork: false
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                - traefik-ingress-ilb
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+      - image: acraks43tj3q6dr2mfq.azurecr.io/library/traefik:2.4.5
+        imagePullPolicy: IfNotPresent
+        name: traefik-ingress-controller
+        resources:
+          requests:
+            cpu: 100m
+            memory: 64Mi
+          limits:
+            cpu: 300m
+            memory: 150Mi
+        readinessProbe:
+          httpGet:
+            path: /ping
+            port: traefik
+          failureThreshold: 1
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 2
+        livenessProbe:
+          httpGet:
+            path: /ping
+            port: traefik
+          failureThreshold: 3
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 2
+        ports:
+        - name: traefik
+          containerPort: 9000
+          protocol: TCP
+        #- name: websecure
+        #  containerPort: 8443
+        #  protocol: TCP
+        - name: web
+          containerPort: 8000
+          protocol: TCP
+        - name: metrics
+          containerPort: 8082
+          protocol: TCP
+        securityContext:
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsGroup: 65532
+          runAsNonRoot: true
+          runAsUser: 65532
+        volumeMounts:
+          - name: data
+            mountPath: /data
+          - name: tmp
+            mountPath: /tmp
+          - name: config
+            mountPath: /config
+            readOnly: true
+          #- name: ssl-csi
+          #  mountPath: /certs
+          #  readOnly: true
+        args:
+        - --configfile=/config/traefik.toml
+      volumes:
+        - name: config
+          configMap:
+            name: traefik-ingress-config
+        #- name: ssl-csi
+        #  csi:
+        #    driver: secrets-store.csi.k8s.io
+        #    readOnly: true
+        #    volumeAttributes:
+        #      secretProviderClass: "aks-ingress-contoso-com-tls-secret-csi-akv"
+        - name: tmp
+          emptyDir: {}
+        - name: data
+          emptyDir: {}
+      tolerations:
+      - key: pci-scope
+        effect: NoExecute
+        operator: Equal
+        value: out-of-scope
