@@ -104,10 +104,10 @@ data:
     [entryPoints]
       [entryPoints.metrics]
         address = ":8082"
-    #  [entryPoints.traefik]
-    #    address = ":9000"
+      [entryPoints.traefik]
+        address = ":9000"
       [entryPoints.web]
-        address = ":8080/tcp"
+        address = ":8000/tcp"
         [entryPoints.web.forwardedHeaders]
           trustedIPs = ["10.240.4.16/28"]
     #  [entryPoints.websecure]
@@ -206,7 +206,7 @@ spec:
                 - traefik-ingress-ilb
             topologyKey: "kubernetes.io/hostname"
       containers:
-      - image: acraks43tj3q6dr2mfq.azurecr.io/library/traefik:2.4.5
+      - image: acraks43tj3q6dr2mfq.azurecr.io/live/library/traefik:2.4.5
         imagePullPolicy: IfNotPresent
         name: traefik-ingress-controller
         resources:
