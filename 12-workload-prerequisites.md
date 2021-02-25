@@ -41,6 +41,35 @@ Once traffic hits Azure Application Gateway, public-facing TLS is terminated. Th
    az keyvault delete-policy --upn $(az account show --query user.name -o tsv) -n $KEYVAULT_NAME
    ```
 
+## Update kubernetes manifest with a reference to this certificate
+
+You'll be using the [Azure Key Vault Provider for Secrets Store CSI driver](https://github.com/Azure/secrets-store-csi-driver-provider-azure) to mount this certificate which you just stored in Azure Key Vault. Once mounted, your ingress controller will be able to use it. To make the CSI Provider aware of this certificate, it must be described in a `SecretProviderClass` resource. You'll update the supplied manifest file with this information now.
+
+### Steps
+
+1. Update placeholders with your specific deployment values.
+
+   TODO: Replace these with proper values
+
+   ```bash
+   sed -i "s/KEYVAULT_NAME/kv-aks-43tj3q6dr2mfq/" workload/akv-tls-provider.yaml
+   sed -i "s/KEYVAULT_TENANT/72f988bf-86f1-41af-91ab-2d7cd011db47/" workload/akv-tls-provider.yaml
+
+   git commit -a -m "Update SecretProviderClass to reference my ingress certificate."
+   ```
+
+1. Push this change to your repo.
+
+   ```bash
+   git push
+   ```
+
+1. _From your Azure Bastion connection_, get this update.
+
+   ```bash
+   git pull
+   ```
+
 ## Setting up Pod Managed Identity
 
 Pod Managed Identity goes beyond being just a workload concern. A Pod Managed Identity is a User Managed Identity resource in Azure, and needs to be managed like any other resource in Azure. Likewise, the cluster's control plane Managed Identity must have the authority to assign this identity to the nodepools (VMSS resources). As such, before a workload can use a managed identity the cluster operator needs to make it "available" to the workload. In this point in the walkthrough, we are going to deploy a slight variant of the prior cluster stamp ARM template that will associated a User Managed Identity with the cluster, assign it permissions to read the certificate you just imported above, and make it available for your workload. Because Pod Managed Identity is installed as a cluster add-on (vs through the manual open source installation option), it is critical that all pod identities are managed via the cluster's ARM template. **Mixing imperative management of identities (`az aks pod-identity ...` or `kubectl`) and declarative management of identities (ARM/Terraform template) will lead to an unexpected removal of identities, which will cause an outage in your workload.**
@@ -90,7 +119,7 @@ TODO: Should we defer setting up real routes until this point?
 
 ### Who manages the ingress controller
 
-You'll need to decide how to consider the management of ingresses and ingress controllers. You might opt for a single, shared ingress controller for all work in your cluster, keeping workloads one step removed from this concern. In that case, your cluster bootstrapping might have included some or all of these steps -- and your ingress controller might be looking at a wider set of namespaces for ingress requests. Alternatively, you could opt to have workloads take care of all of their concerns, including ingress controllers. For clusters that contain a single, unified workload, the distinction might not be that great between the two. Ensure you've discussed the pros and cons with your team and documented your decisions on this. Since regulated clusters should be as narrow in scope as practical, consider promoting the management of the ingress controller to be a bootstrap concern.
+You'll need to decide how to consider the management of ingress controllers. You might opt for a single, shared ingress controller for all work in your cluster, keeping workloads one step removed from this concern. In that case, your cluster bootstrapping might have included some or all of these steps -- and your ingress controller might be looking at a wider set of namespaces for ingress requests. Alternatively, you could opt to have workloads take care of all of their concerns, including deploying and managing their own ingress controllers. Live-site management concerns (access to logs), different ingress controllers based on needs, etc might be some reasons you decide workload level. For clusters that contain a single, unified workload, the distinction might not be that great between the two. Ensure you've discussed the pros and cons with your team and documented your decision and enforcement plan on this. Since regulated clusters should be as narrow in scope as practical, consider promoting the management of the ingress controller to be a bootstrap concern.
 
 TODO: Do we have enough time to pull this out and configure it as such?
 
