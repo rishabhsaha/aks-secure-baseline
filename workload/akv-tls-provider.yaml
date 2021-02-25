@@ -6,7 +6,7 @@
      provider: azure
      parameters:
        usePodIdentity: "true"
-       keyvaultName: kv-aks-43tj3q6dr2mfq
+       keyvaultName: KEYVAULT_NAME
        objects: |
          array:
            - |
@@ -17,4 +17,4 @@
              objectName: traefik-ingress-internal-aks-ingress-contoso-com-tls
              objectAlias: tls.key
              objectType: secret
-       tenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
+       tenantId: KEYVAULT_TENANT

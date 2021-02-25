@@ -3,3 +3,8 @@ kind: Kustomization
 namespace: api
 resources:
 - akv-tls-provider.yaml
+- traefik.yaml
+
+images:
+- name: docker.io/library/traefik
+  newName: REPLACE_ME_WITH_YOUR_ACRNAME.azurecr.io/live/library/traefik
