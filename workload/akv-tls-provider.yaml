@@ -1,0 +1,20 @@
+   apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
+   kind: SecretProviderClass
+   metadata:
+     name: aks-ingress-contoso-com-tls-secret-csi-akv
+   spec:
+     provider: azure
+     parameters:
+       usePodIdentity: "true"
+       keyvaultName: kv-aks-43tj3q6dr2mfq
+       objects: |
+         array:
+           - |
+             objectName: traefik-ingress-internal-aks-ingress-contoso-com-tls
+             objectAlias: tls.crt
+             objectType: cert
+           - |
+             objectName: traefik-ingress-internal-aks-ingress-contoso-com-tls
+             objectAlias: tls.key
+             objectType: secret
+       tenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
