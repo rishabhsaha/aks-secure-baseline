@@ -2,7 +2,7 @@ kind: ServiceAccount
 apiVersion: v1
 metadata:
   name: traefik-ingress-controller
-  namespace: a0008
+  namespace: api
   labels:
     app.kubernetes.io/name: traefik-ingress-ilb
     app.kubernetes.io/instance: traefik-ingress-ilb
@@ -11,7 +11,7 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: traefik-ingress-controller
-  namespace: a0008
+  namespace: api
   labels:
     app.kubernetes.io/name: traefik-ingress-ilb
     app.kubernetes.io/instance: traefik-ingress-ilb
@@ -28,38 +28,27 @@ rules:
       - watch
   - apiGroups:
       - extensions
+      - networking.k8s.io
     resources:
       - ingresses
+      - ingressclasses
     verbs:
       - get
       - list
       - watch
   - apiGroups:
       - extensions
+      - networking.k8s.io
     resources:
       - ingresses/status
     verbs:
       - update
-  - apiGroups:
-      - traefik.containo.us
-    resources:
-      - ingressroutes
-      - ingressroutetcps
-      - ingressrouteudps
-      - middlewares
-      - tlsoptions
-      - tlsstores
-      - traefikservices
-    verbs:
-      - get
-      - list
-      - watch
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: traefik-watch-workloads
-  namespace: a0008
+  namespace: api
   labels:
     app.kubernetes.io/name: traefik-ingress-ilb
     app.kubernetes.io/instance: traefik-ingress-ilb
@@ -70,7 +59,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: traefik-ingress-controller
-  namespace: a0008
+  namespace: api
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -88,17 +77,15 @@ data:
         addEntryPointsLabels = true
         addServicesLabels = true
     [accessLog]
-      filePath = "/data/access.log"
-      bufferingSize = 100
+      format = "json"
     [global]
-      # prevent Traefik from checking newer versions in production
-      checknewversion = false
-      # prevent Traefik from collecting and sending stats from production
-      sendanonymoususage = false
+      checkNewVersion = false
+      sendAnonymousUsage = false
     [log]
-      level = "ERROR"
+      level = "WARN"
       format = "json"
     [api]
+      insecure = false
       dashboard = false
     [providers]
       # Configuration reload frequency:
@@ -112,9 +99,9 @@ data:
       # and derives the corresponding dynamic configuration from it. https://kubernetes.io/docs/concepts/services-networking/ingress/
       [providers.kubernetesingress]
         ingressClass = "traefik-internal"
-        namespaces = ["a0008"]
+        namespaces = ["api"]
         [providers.kubernetesIngress.ingressEndpoint]
-          publishedService = "a0008/traefik-ingress-service"
+          publishedService = "api/traefik-ingress-service"
     # Enable gzip compression
     [http.middlewares]
       [http.middlewares.gzip-compress.compress]
@@ -134,8 +121,6 @@ data:
     [ping]
       entryPoint = "traefik"
     [tls]
-      # without duplicating this cert config and with SNI enabled, Traefik won't
-      # find the certificates for your host. It may be a Traefik's issue.
       [[tls.certificates]]
         certFile = "/certs/tls.crt"
         keyFile = "/certs/tls.key"
@@ -143,8 +128,6 @@ data:
       [tls.stores]
         [tls.stores.default]
           [tls.stores.default.defaultCertificate]
-            # without specifying in here your certs, Traefik will create its own
-            # certificate
             certFile = "/certs/tls.crt"
             keyFile = "/certs/tls.key"
       [tls.options.default]
@@ -161,7 +144,7 @@ metadata:
     app.kubernetes.io/instance: traefik-ingress-ilb
   annotations:
     service.beta.kubernetes.io/azure-load-balancer-internal: "true"
-    service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "snet-clusteringressservices"
+    service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "snet-cluster-ingressservices"
 spec:
   type: LoadBalancer
   loadBalancerIP: 10.240.4.4
@@ -172,6 +155,7 @@ spec:
   ports:
   - port: 443
     name: https
+    protocol: TCP
     targetPort: websecure
 ---
 apiVersion: apps/v1
@@ -182,7 +166,7 @@ metadata:
   labels:
     app.kubernetes.io/name: traefik-ingress-ilb
     app.kubernetes.io/instance: traefik-ingress-ilb
-    aadpodidbinding: traefik-ingress-controller
+    aadpodidbinding: podmi-ingress-controller
 spec:
   replicas: 2
   selector:
@@ -202,7 +186,7 @@ spec:
       labels:
         app.kubernetes.io/name: traefik-ingress-ilb
         app.kubernetes.io/instance: traefik-ingress-ilb
-        aadpodidbinding: traefik-ingress-controller
+        aadpodidbinding: podmi-ingress-controller
     spec:
       hostNetwork: false
       serviceAccountName: traefik-ingress-controller
@@ -292,5 +276,12 @@ spec:
               secretProviderClass: "aks-ingress-contoso-com-tls-secret-csi-akv"
         - name: data
           emptyDir: {}
-      nodeSelector:
-       agentpool: npuser01
+      tolerations:
+      - key: pci-scope
+        effect: NoExecute
+        operator: Equal
+        value: out-of-scope
+      - key: pci-scope
+        effect: NoExecute
+        operator: Equal
+        value: in-scope

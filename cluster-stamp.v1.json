@@ -293,13 +293,28 @@
             "name": "[variables('keyVaultName')]",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'mi-appgateway-frontend')]"
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'mi-appgateway-frontend')]",
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'podmi-ingress-controller')]"
+
             ],
             "properties": {
                 "accessPolicies": [
                     {
                         "tenantId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'mi-appgateway-frontend')).tenantId]",
                         "objectId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'mi-appgateway-frontend')).principalId]",
+                        "permissions": {
+                            "secrets": [
+                                "get"
+                            ],
+                            "certificates": [
+                                "get"
+                            ],
+                            "keys": []
+                        }
+                    },
+                    {
+                        "tenantId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'podmi-ingress-controller')).tenantId]",
+                        "objectId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'podmi-ingress-controller')).principalId]",
                         "permissions": {
                             "secrets": [
                                 "get"
@@ -1331,7 +1346,8 @@
                 "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameEnforceInternalLoadBalancers'))]",
                 "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameEnforceResourceLimits'))]",
                 "[resourceId('Microsoft.Authorization/policyAssignments', variables('policyAssignmentNameRoRootFilesystem'))]",
-                "[resourceId('Microsoft.Compute/virtualMachineScaleSets', 'vmss-jumpboxes')]"
+                "[resourceId('Microsoft.Compute/virtualMachineScaleSets', 'vmss-jumpboxes')]",
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'podmi-ingress-controller')]"
             ],
             "properties": {
                 "kubernetesVersion": "[parameters('kubernetesVersion')]",
@@ -1347,7 +1363,6 @@
                         "minCount": 3,
                         "maxCount": 4,
                         "vnetSubnetID": "[variables('vnetSystemNodePoolSubnetResourceId')]",
-                        //"podSubnetID": "[variables('vnetSystemNodePoolSubnetResourceId')]",
                         "enableAutoScaling": true,
                         "type": "VirtualMachineScaleSets",
                         "mode": "System",
@@ -1381,7 +1396,6 @@
                         "minCount": 2,
                         "maxCount": 5,
                         "vnetSubnetID": "[variables('vnetInScopeNodePoolSubnetResourceId')]",
-                        //"podSubnetID": "[variables('vnetInScopeNodePoolSubnetResourceId')]",
                         "enableAutoScaling": true,
                         "type": "VirtualMachineScaleSets",
                         "mode": "User",
@@ -1418,7 +1432,6 @@
                         "minCount": 2,
                         "maxCount": 5,
                         "vnetSubnetID": "[variables('vnetOutOfScopeNodePoolSubnetResourceId')]",
-                        //"podSubnetID": "[variables('vnetOutOfScopeNodePoolSubnetResourceId')]",
                         "enableAutoScaling": true,
                         "type": "VirtualMachineScaleSets",
                         "mode": "User",
@@ -1518,7 +1531,18 @@
                     "privateDNSZone": "[resourceId(variables('vNetResourceGroup'), 'Microsoft.Network/privateDnsZones', concat('privatelink.', parameters('location') ,'.azmk8s.io'))]"
                 },
                 "podIdentityProfile": { 
-                    "enabled": true
+                    "enabled": true,
+                    "userAssignedIdentities": [
+                        {
+                            "name": "podmi-ingress-controller",
+                            "namespace": "api",
+                            "identity": {
+                                "resourceId": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'podmi-ingress-controller')]",
+                                "clientId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'podmi-ingress-controller')).clientId]",
+                                "objectId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'podmi-ingress-controller')).principalId]"
+                            }
+                        }
+                    ]
                 }
             },
             "identity": {
@@ -2182,6 +2206,20 @@
                 "windowSize": "PT1M"
             }
         },
+        /*{
+            "type": "Microsoft.ManagedIdentity/userAssignedIdentities/providers/roleAssignments",
+            "name": "[concat('podmi-ingress-controller', '/Microsoft.Authorization/', guid(concat(resourceGroup().id), variables('managedIdentityOperatorRole')))]",
+            "apiVersion": "2018-09-01-preview",
+            "comments": "Grant the AKS cluster with Manage Identity Operator role permissions over the managed identity used for the ingress controller.  Allows it to be assigned to the underlying VMSS.",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName'))]"
+            ],
+            "properties": {
+                "roleDefinitionId": "[variables('managedIdentityOperatorRole')]",
+                "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', variables('clusterName')), '2020-11-01').identityProfile.kubeletidentity.objectId]",
+                "principalType": "ServicePrincipal"
+            }
+        },*/
         {
             "type": "Microsoft.Authorization/policyAssignments",
             "apiVersion": "2020-03-01",
@@ -2330,6 +2368,14 @@
         "agwName": {
             "type": "string",
             "value": "[variables('agwName')]"
+        },
+        "aksIngressControllerPodManagedIdentityResourceId": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'podmi-ingress-controller')]"
+        },
+        "aksIngressControllerPodManagedIdentityClientId": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities','podmi-ingress-controller'), '2018-11-30').clientId]"
         },
         "keyVaultName": {
             "type": "string",

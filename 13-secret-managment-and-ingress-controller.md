@@ -2,48 +2,47 @@
 
 Previously you have configured [workload prerequisites](./12-workload-prerequisites.md). These steps configure Traefik, the AKS ingress solution used in this reference implementation, so that it can securely expose the web app to your Application Gateway.
 
-## Steps
 
-1. Get the AKS Ingress Controller Managed Identity details
+## Expected Outcome
+
+* A Pod Managed Identity (`podmi-ingress-controller`) is deployed to the `a0005` namespace and ready to be bound via the name `podmi-ingress-controller`.
+* TODO
+
+## Setting up Pod Managed Identity
+
+Pod Managed Identity goes beyond being just a workload concern. A Pod Managed Identity is a User Managed Identity resource in Azure, and needs to be managed like any other resource in Azure. Likewise, the cluster's control plane Managed Identity must have the authority to assign this identity to the nodepools (VMSS resources). As such, before a workload can use a managed identity the cluster operator needs to make it "available" to the workload. In this walkthrough, we are going to deploy a slight variant of the prior cluster stamp ARM template that will associated a User Managed Identity with the cluster, which will then make it available for your workload. Because Pod Managed Identity is installed as a cluster add-on (vs through the manual open source installation option), it is critical that all pod identities are managed via the cluster's ARM template. **Mixing imperative management of identities (`az aks pod-identity ...` or `kubectl`) and declarative management of identities (ARM/Terraform template) will lead to an unexpected removal of identities, which will cause an outage in your workload.**
+
+### Steps
+
+1. Deploy the cluster ARM template that has been updated with the Pod Managed Identity assignment.
+
+   This is the same cluster stamp ARM template you deployed before, but with a couple updates to include the Pod Managed Identity that needs to be made available to the workload. You'll be using the exact same parameters as before. If you wish to see the difference, you can diff them HERE (TODO).
 
    ```bash
-   export TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerUserManageIdentityResourceId.value -o tsv)
-   export TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID=$(az deployment group show --resource-group rg-bu0001a0008 -n cluster-stamp --query properties.outputs.aksIngressControllerUserManageIdentityClientId.value -o tsv)
+   # [This takes about 10 minutes.]
+   az deployment group create -g rg-bu0001a0005 -f cluster-stamp.v1.json -p targetVnetResourceId=${RESOURCEID_VNET_CLUSTERSPOKE} clusterAdminAadGroupObjectId=${AADOBJECTID_GROUP_CLUSTERADMIN} k8sControlPlaneAuthorizationTenantId=${TENANTID_K8SRBAC} appGatewayListenerCertificate=${APP_GATEWAY_LISTENER_CERTIFICATE} aksIngressControllerCertificate=${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64} jumpBoxImageResourceId=${RESOURCEID_IMAGE_JUMPBOX} jumpBoxCloudInitAsBase64=${CLOUDINIT_BASE64}
+
+   # Or if you used the parameters file...
+   #az deployment group create -g rg-bu0001a0005 -f cluster-stamp.v1.json -p "@azuredeploy.parameters.prod.json"
    ```
+
+1. _From your Azure Bastion connection_, confirm your Pod Managed Identity now exists.
+
+   ```bash
+   kubectl describe AzureIdentity,AzureIdentityBinding -n a0005
+   ```
+
+   This will show you the Azure identity resources that were created via the ARM template changes applied in the prior step. This means that any workload in the `a0005` namespace that wishes to identify itself as the Azure resource `podmi-ingress-controller` can do so by adding a `aadpodidbinding: podmi-ingress-controller` label to their pod deployment. In this walkthrough, our ingress controller, Traefik, will be using that identity to pull its TLS certificate from Azure Key Vault.
+
+## Steps
 
 1. Ensure Flux has created the following namespace
 
    ```bash
    # press Ctrl-C once you receive a successful response
-   kubectl get ns a0008 -w
+   kubectl get ns a0005 -w
    ```
 
-1. Create Traefik's Azure Managed Identity binding
-
-   > Create the Traefik Azure Identity and the Azure Identity Binding to let Azure Active Directory Pod Identity to get tokens on behalf of the Traefik's User Assigned Identity and later on assign them to the Traefik's pod.
-
-   ```bash
-   cat <<EOF | kubectl apply -f -
-   apiVersion: "aadpodidentity.k8s.io/v1"
-   kind: AzureIdentity
-   metadata:
-     name: aksic-to-keyvault-identity
-     namespace: a0008
-   spec:
-     type: 0
-     resourceID: $TRAEFIK_USER_ASSIGNED_IDENTITY_RESOURCE_ID
-     clientID: $TRAEFIK_USER_ASSIGNED_IDENTITY_CLIENT_ID
-   ---
-   apiVersion: "aadpodidentity.k8s.io/v1"
-   kind: AzureIdentityBinding
-   metadata:
-     name: aksic-to-keyvault-identity-binding
-     namespace: a0008
-   spec:
-     azureIdentity: aksic-to-keyvault-identity
-     selector: traefik-ingress-controller
-   EOF
-   ```
 
 1. Create the Traefik's Secret Provider Class resource
 

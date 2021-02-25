@@ -33,12 +33,17 @@ Now that the [hub-spoke network is provisioned](./07-cluster-networking.md), the
 
 1. Deploy the cluster ARM template.
 
+   > Alteratively, you could set these values in [`azuredeploy.parameters.prod.json`](./azuredeploy.parameters.prod.json) file instead of the individual key-value pairs shown below. You'll be redeploying a slight evolution of this template a later time in this walkthrough, and you might find it easier to have these variables captured in the parameters file as they will not change for the second deployment.
+
    ```bash
    # [This takes about 20 minutes.]
    az deployment group create -g rg-bu0001a0005 -f cluster-stamp.json -p targetVnetResourceId=${RESOURCEID_VNET_CLUSTERSPOKE} clusterAdminAadGroupObjectId=${AADOBJECTID_GROUP_CLUSTERADMIN} k8sControlPlaneAuthorizationTenantId=${TENANTID_K8SRBAC} appGatewayListenerCertificate=${APP_GATEWAY_LISTENER_CERTIFICATE} aksIngressControllerCertificate=${AKS_INGRESS_CONTROLLER_CERTIFICATE_BASE64} jumpBoxImageResourceId=${RESOURCEID_IMAGE_JUMPBOX} jumpBoxCloudInitAsBase64=${CLOUDINIT_BASE64}
+
+   # Or if you updated and used the parameters file...
+   #az deployment group create -g rg-bu0001a0005 -f cluster-stamp.json -p "@azuredeploy.parameters.prod.json"
    ```
 
-   > Alteratively, you could set these values in [`azuredeploy.parameters.prod.json`](./azuredeploy.parameters.prod.json) file and deployed as above, using `-p "@azuredeploy.parameters.prod.json"` instead of the individual key-value pairs.
+At this point, you have a cluster and its adjacent resources deployed, but it isn't bootstrapped yet. A bootstrapped cluster is one that has a base (think cluster-wide, workload agnostic) set of security agents, configurations, etc. applied even before you get any workloads lit up. The bootstrapping of a cluster should be an immediate-follow after deployment of your cluster, and should be automated along with the deployment of your cluster. The following steps will walk through the process manually so that you understand an example of what could be a starting point for your post-deployment bootstrapping.
 
 ## Container registry note
 

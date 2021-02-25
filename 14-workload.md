@@ -42,6 +42,16 @@ TODO: Consider returning a quarantine registry in the outputs of the arm templat
    az acr import --source quarantine/a0005/chain-api:1.0 -r $ACR_NAME_QUARANTINE -t live/a0005/chain-api:1.0 -n $ACR_NAME
    ```
 
+1. TRAEFIK
+
+  Part of this workload will be exposed to the internet and that will be handled via an ingress controller, in this case, Traefik.
+
+1. Quarintine Traefik
+
+  ```bash
+  az acr import --source traefik:v2.4.5 --
+  ```
+
 1. _From your Azure Bastion connection_, deploy the sample workload to cluster.
 
    ```bash
